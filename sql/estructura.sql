@@ -1,13 +1,14 @@
-CREATE TABLE IF NOT EXISTS `contenido` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `seccion` varchar(50) NOT NULL,
-  `clave` varchar(50) NOT NULL,
-  `valor` text NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `seccion_clave` (`seccion`,`clave`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+-- Crear tabla contenido (si no existe)
+CREATE TABLE IF NOT EXISTS contenido (
+    id SERIAL PRIMARY KEY,
+    seccion VARCHAR(50) NOT NULL,
+    clave VARCHAR(50) NOT NULL,
+    valor TEXT NOT NULL,
+    UNIQUE(seccion, clave)
+);
 
-INSERT INTO `contenido` (`seccion`, `clave`, `valor`) VALUES
+-- Insertar datos por defecto
+INSERT INTO contenido (seccion, clave, valor) VALUES
 ('hero', 'titulo', 'Innovación que construye el futuro'),
 ('hero', 'subtitulo', 'Ingeniería, construcción y desarrollo de software con visión de vanguardia.'),
 ('hero', 'frases', '["Ingeniería de vanguardia","Construcción inteligente","Software que transforma"]'),

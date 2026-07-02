@@ -1,16 +1,17 @@
 FROM php:8.2-apache
 
-# Habilitar mod_rewrite para URLs amigables (opcional)
+# Instalar extensiones para PostgreSQL
+RUN apt-get update && apt-get install -y libpq-dev \
+    && docker-php-ext-install pdo pdo_pgsql
+
+# Habilitar mod_rewrite (opcional)
 RUN a2enmod rewrite
 
-# Instalar extensiones de PHP necesarias (mysqli ya está, pero podemos asegurarlo)
-RUN docker-php-ext-install mysqli && docker-php-ext-enable mysqli
-
-# Crear carpeta uploads y dar permisos de escritura
-RUN mkdir -p /var/www/html/uploads && chown -R www-data:www-data /var/www/html/uploads
-
-# Copiar todos los archivos del proyecto al contenedor
+# Copiar todos los archivos al directorio de Apache
 COPY . /var/www/html/
 
-# Exponer el puerto 80
+# Establecer permisos para la carpeta uploads (si existe)
+RUN chown -R www-data:www-data /var/www/html/uploads 2>/dev/null || true
+
+# Exponer puerto 80
 EXPOSE 80

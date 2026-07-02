@@ -1,50 +1,94 @@
 <?php
 require_once 'funciones.php';
 
-$hero_titulo = getContent('hero', 'titulo', 'Innovación que construye el futuro');
-$hero_subtitulo = getContent('hero', 'subtitulo', 'Ingeniería, construcción y desarrollo de software con visión de vanguardia.');
-$hero_frases = getContent('hero', 'frases', '["Ingeniería de vanguardia","Construcción inteligente","Software que transforma"]');
-$hero_frases_array = json_decode($hero_frases, true) ?: ["Ingeniería de vanguardia","Construcción inteligente","Software que transforma"];
+// Si no hay conexión (pdo no definido), usar valores por defecto
+if (!isset($pdo)) {
+    $hero_titulo = 'Innovación que construye el futuro';
+    $hero_subtitulo = 'Ingeniería, construcción y desarrollo de software con visión de vanguardia.';
+    $hero_frases_array = ["Ingeniería de vanguardia","Construcción inteligente","Software que transforma"];
+    // ... definir todos los defaults
+    $servicios = [
+        ['icon' => '🏗️', 'titulo' => 'Ingeniería Civil', 'desc' => 'Diseño y construcción de infraestructura resistente y sostenible.'],
+        ['icon' => '💻', 'titulo' => 'Desarrollo Software', 'desc' => 'Aplicaciones web, móviles y sistemas a la medida con arquitecturas modernas.'],
+        ['icon' => '🔧', 'titulo' => 'Consultoría TI', 'desc' => 'Asesoramiento estratégico para transformación digital y optimización de procesos.'],
+        ['icon' => '📊', 'titulo' => 'Data & Analytics', 'desc' => 'Inteligencia de negocio, dashboards y análisis predictivo.'],
+        ['icon' => '🌐', 'titulo' => 'Infraestructura Cloud', 'desc' => 'Migración y gestión de entornos en la nube con alta disponibilidad.'],
+        ['icon' => '🔒', 'titulo' => 'Ciberseguridad', 'desc' => 'Auditorías, protección de datos y cumplimiento normativo.']
+    ];
+    $proyectos = [
+        ['img' => 'https://images.unsplash.com/photo-1541888946425-d81bb19240f5?w=600&h=400&fit=crop', 'titulo' => 'Puente Colgante Moderno', 'desc' => 'Diseño estructural y construcción de un puente peatonal con materiales compuestos.'],
+        ['img' => 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=600&h=400&fit=crop', 'titulo' => 'Plataforma de Gestión', 'desc' => 'Sistema ERP para empresas de construcción con módulos de inventario y finanzas.'],
+        ['img' => 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=600&h=400&fit=crop', 'titulo' => 'Edificio Inteligente', 'desc' => 'Automatización y control de iluminación, climatización y seguridad mediante IoT.']
+    ];
+    $tecnologias = ['React', 'Node.js', 'Python', 'AWS', 'Docker', 'PostgreSQL', 'Flutter', 'TypeScript'];
+    $stats = [
+        ['clave' => 'anos', 'label' => 'Años de experiencia', 'default' => 12],
+        ['clave' => 'proyectos', 'label' => 'Proyectos entregados', 'default' => 150],
+        ['clave' => 'clientes', 'label' => 'Clientes satisfechos', 'default' => 98],
+        ['clave' => 'satisfaccion', 'label' => '% Calidad garantizada', 'default' => 100]
+    ];
+    foreach ($stats as &$stat) {
+        $stat['valor'] = $stat['default'];
+    }
+    unset($stat);
+    $equipo = [
+        ['img' => 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=200&h=200&fit=crop&crop=face', 'nombre' => 'Carlos Mendoza', 'cargo' => 'CEO & Fundador', 'bio' => 'Ingeniero civil con 20 años de experiencia en grandes infraestructuras.'],
+        ['img' => 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=200&h=200&fit=crop&crop=face', 'nombre' => 'Laura Fernández', 'cargo' => 'CTO', 'bio' => 'Especialista en arquitectura de software y sistemas distribuidos.'],
+        ['img' => 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=200&h=200&fit=crop&crop=face', 'nombre' => 'María Gómez', 'cargo' => 'Project Manager', 'bio' => 'Lidera equipos multidisciplinarios con metodologías ágiles.'],
+        ['img' => 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=200&fit=crop&crop=face', 'nombre' => 'Andrés Ruiz', 'cargo' => 'Ingeniero de Software', 'bio' => 'Desarrollador full-stack apasionado por la IA y el cloud computing.']
+    ];
+    $contacto_titulo = 'Contáctanos ahora';
+    $contacto_subtitulo = 'Estamos listos para hacer realidad tu próximo proyecto.';
+    $footer_texto = 'Ingeniería, construcción y tecnología para un futuro sostenible e inteligente.';
+    $footer_copyright = '&copy; 2026 GEINFTEC S.A.S. Todos los derechos reservados. | Diseñado con 💙 en Colombia.';
+} else {
+    // Obtener datos de la BD
+    $hero_titulo = getContent('hero', 'titulo', 'Innovación que construye el futuro');
+    $hero_subtitulo = getContent('hero', 'subtitulo', 'Ingeniería, construcción y desarrollo de software con visión de vanguardia.');
+    $hero_frases = getContent('hero', 'frases', '["Ingeniería de vanguardia","Construcción inteligente","Software que transforma"]');
+    $hero_frases_array = json_decode($hero_frases, true) ?: ["Ingeniería de vanguardia","Construcción inteligente","Software que transforma"];
 
-$servicios = [
-    ['icon' => '🏗️', 'titulo' => 'Ingeniería Civil', 'desc' => 'Diseño y construcción de infraestructura resistente y sostenible.'],
-    ['icon' => '💻', 'titulo' => 'Desarrollo Software', 'desc' => 'Aplicaciones web, móviles y sistemas a la medida con arquitecturas modernas.'],
-    ['icon' => '🔧', 'titulo' => 'Consultoría TI', 'desc' => 'Asesoramiento estratégico para transformación digital y optimización de procesos.'],
-    ['icon' => '📊', 'titulo' => 'Data & Analytics', 'desc' => 'Inteligencia de negocio, dashboards y análisis predictivo.'],
-    ['icon' => '🌐', 'titulo' => 'Infraestructura Cloud', 'desc' => 'Migración y gestión de entornos en la nube con alta disponibilidad.'],
-    ['icon' => '🔒', 'titulo' => 'Ciberseguridad', 'desc' => 'Auditorías, protección de datos y cumplimiento normativo.']
-];
+    // Servicios (fijos, pero se pueden hacer dinámicos después)
+    $servicios = [
+        ['icon' => '🏗️', 'titulo' => 'Ingeniería Civil', 'desc' => 'Diseño y construcción de infraestructura resistente y sostenible.'],
+        ['icon' => '💻', 'titulo' => 'Desarrollo Software', 'desc' => 'Aplicaciones web, móviles y sistemas a la medida con arquitecturas modernas.'],
+        ['icon' => '🔧', 'titulo' => 'Consultoría TI', 'desc' => 'Asesoramiento estratégico para transformación digital y optimización de procesos.'],
+        ['icon' => '📊', 'titulo' => 'Data & Analytics', 'desc' => 'Inteligencia de negocio, dashboards y análisis predictivo.'],
+        ['icon' => '🌐', 'titulo' => 'Infraestructura Cloud', 'desc' => 'Migración y gestión de entornos en la nube con alta disponibilidad.'],
+        ['icon' => '🔒', 'titulo' => 'Ciberseguridad', 'desc' => 'Auditorías, protección de datos y cumplimiento normativo.']
+    ];
 
-$proyectos = [
-    ['img' => 'https://images.unsplash.com/photo-1541888946425-d81bb19240f5?w=600&h=400&fit=crop', 'titulo' => 'Puente Colgante Moderno', 'desc' => 'Diseño estructural y construcción de un puente peatonal con materiales compuestos.'],
-    ['img' => 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=600&h=400&fit=crop', 'titulo' => 'Plataforma de Gestión', 'desc' => 'Sistema ERP para empresas de construcción con módulos de inventario y finanzas.'],
-    ['img' => 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=600&h=400&fit=crop', 'titulo' => 'Edificio Inteligente', 'desc' => 'Automatización y control de iluminación, climatización y seguridad mediante IoT.']
-];
+    $proyectos = [
+        ['img' => 'https://images.unsplash.com/photo-1541888946425-d81bb19240f5?w=600&h=400&fit=crop', 'titulo' => 'Puente Colgante Moderno', 'desc' => 'Diseño estructural y construcción de un puente peatonal con materiales compuestos.'],
+        ['img' => 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=600&h=400&fit=crop', 'titulo' => 'Plataforma de Gestión', 'desc' => 'Sistema ERP para empresas de construcción con módulos de inventario y finanzas.'],
+        ['img' => 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=600&h=400&fit=crop', 'titulo' => 'Edificio Inteligente', 'desc' => 'Automatización y control de iluminación, climatización y seguridad mediante IoT.']
+    ];
 
-$tecnologias = ['React', 'Node.js', 'Python', 'AWS', 'Docker', 'PostgreSQL', 'Flutter', 'TypeScript'];
+    $tecnologias = ['React', 'Node.js', 'Python', 'AWS', 'Docker', 'PostgreSQL', 'Flutter', 'TypeScript'];
 
-$stats = [
-    ['clave' => 'anos', 'label' => 'Años de experiencia', 'default' => 12],
-    ['clave' => 'proyectos', 'label' => 'Proyectos entregados', 'default' => 150],
-    ['clave' => 'clientes', 'label' => 'Clientes satisfechos', 'default' => 98],
-    ['clave' => 'satisfaccion', 'label' => '% Calidad garantizada', 'default' => 100]
-];
-foreach ($stats as &$stat) {
-    $stat['valor'] = getContent('estadisticas', $stat['clave'], $stat['default']);
+    $stats = [
+        ['clave' => 'anos', 'label' => 'Años de experiencia', 'default' => 12],
+        ['clave' => 'proyectos', 'label' => 'Proyectos entregados', 'default' => 150],
+        ['clave' => 'clientes', 'label' => 'Clientes satisfechos', 'default' => 98],
+        ['clave' => 'satisfaccion', 'label' => '% Calidad garantizada', 'default' => 100]
+    ];
+    foreach ($stats as &$stat) {
+        $stat['valor'] = getContent('estadisticas', $stat['clave'], $stat['default']);
+    }
+    unset($stat);
+
+    $equipo = [
+        ['img' => 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=200&h=200&fit=crop&crop=face', 'nombre' => 'Carlos Mendoza', 'cargo' => 'CEO & Fundador', 'bio' => 'Ingeniero civil con 20 años de experiencia en grandes infraestructuras.'],
+        ['img' => 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=200&h=200&fit=crop&crop=face', 'nombre' => 'Laura Fernández', 'cargo' => 'CTO', 'bio' => 'Especialista en arquitectura de software y sistemas distribuidos.'],
+        ['img' => 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=200&h=200&fit=crop&crop=face', 'nombre' => 'María Gómez', 'cargo' => 'Project Manager', 'bio' => 'Lidera equipos multidisciplinarios con metodologías ágiles.'],
+        ['img' => 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=200&fit=crop&crop=face', 'nombre' => 'Andrés Ruiz', 'cargo' => 'Ingeniero de Software', 'bio' => 'Desarrollador full-stack apasionado por la IA y el cloud computing.']
+    ];
+
+    $contacto_titulo = getContent('contacto', 'titulo', 'Contáctanos ahora');
+    $contacto_subtitulo = getContent('contacto', 'subtitulo', 'Estamos listos para hacer realidad tu próximo proyecto.');
+    $footer_texto = getContent('footer', 'texto', 'Ingeniería, construcción y tecnología para un futuro sostenible e inteligente.');
+    $footer_copyright = getContent('footer', 'copyright', '&copy; 2026 GEINFTEC S.A.S. Todos los derechos reservados. | Diseñado con 💙 en Colombia.');
 }
-unset($stat);
-
-$equipo = [
-    ['img' => 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=200&h=200&fit=crop&crop=face', 'nombre' => 'Carlos Mendoza', 'cargo' => 'CEO & Fundador', 'bio' => 'Ingeniero civil con 20 años de experiencia en grandes infraestructuras.'],
-    ['img' => 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=200&h=200&fit=crop&crop=face', 'nombre' => 'Laura Fernández', 'cargo' => 'CTO', 'bio' => 'Especialista en arquitectura de software y sistemas distribuidos.'],
-    ['img' => 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=200&h=200&fit=crop&crop=face', 'nombre' => 'María Gómez', 'cargo' => 'Project Manager', 'bio' => 'Lidera equipos multidisciplinarios con metodologías ágiles.'],
-    ['img' => 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=200&fit=crop&crop=face', 'nombre' => 'Andrés Ruiz', 'cargo' => 'Ingeniero de Software', 'bio' => 'Desarrollador full-stack apasionado por la IA y el cloud computing.']
-];
-
-$contacto_titulo = getContent('contacto', 'titulo', 'Contáctanos ahora');
-$contacto_subtitulo = getContent('contacto', 'subtitulo', 'Estamos listos para hacer realidad tu próximo proyecto.');
-$footer_texto = getContent('footer', 'texto', 'Ingeniería, construcción y tecnología para un futuro sostenible e inteligente.');
-$footer_copyright = getContent('footer', 'copyright', '&copy; 2026 GEINFTEC S.A.S. Todos los derechos reservados. | Diseñado con 💙 en Colombia.');
 ?>
 <!DOCTYPE html>
 <html lang="es">
