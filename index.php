@@ -58,8 +58,10 @@ $footer_copyright = getContent('footer', 'copyright', '&copy; 2026 GEINFTEC S.A.
     <link rel="stylesheet" href="style.css" />
 </head>
 <body>
+    <!-- Progress Bar -->
     <div id="progress-bar"></div>
 
+    <!-- HEADER -->
     <header class="header" id="header">
         <div class="container">
             <div class="logo">GEINFTEC <span>S.A.S.</span></div>
@@ -77,6 +79,7 @@ $footer_copyright = getContent('footer', 'copyright', '&copy; 2026 GEINFTEC S.A.
         </div>
     </header>
 
+    <!-- HERO -->
     <section class="hero" id="hero">
         <canvas id="hero-canvas"></canvas>
         <div class="container hero-content">
@@ -90,6 +93,7 @@ $footer_copyright = getContent('footer', 'copyright', '&copy; 2026 GEINFTEC S.A.
         </div>
     </section>
 
+    <!-- SERVICIOS -->
     <section id="servicios">
         <div class="container">
             <h2 class="section-title fade-up"><?php echo getContent('servicios', 'titulo', 'Nuestros Servicios'); ?></h2>
@@ -106,6 +110,7 @@ $footer_copyright = getContent('footer', 'copyright', '&copy; 2026 GEINFTEC S.A.
         </div>
     </section>
 
+    <!-- PROYECTOS -->
     <section id="proyectos" style="background: rgba(0,0,0,0.2);">
         <div class="container">
             <h2 class="section-title fade-up"><?php echo getContent('proyectos', 'titulo', 'Proyectos Destacados'); ?></h2>
@@ -125,6 +130,7 @@ $footer_copyright = getContent('footer', 'copyright', '&copy; 2026 GEINFTEC S.A.
         </div>
     </section>
 
+    <!-- TECNOLOGÍAS -->
     <section id="tecnologias">
         <div class="container">
             <h2 class="section-title fade-up"><?php echo getContent('tecnologias', 'titulo', 'Tecnologías que impulsamos'); ?></h2>
@@ -137,6 +143,7 @@ $footer_copyright = getContent('footer', 'copyright', '&copy; 2026 GEINFTEC S.A.
         </div>
     </section>
 
+    <!-- ESTADÍSTICAS -->
     <section id="estadisticas" style="background: rgba(0,0,0,0.15);">
         <div class="container">
             <h2 class="section-title fade-up"><?php echo getContent('estadisticas', 'titulo', 'En números'); ?></h2>
@@ -152,6 +159,7 @@ $footer_copyright = getContent('footer', 'copyright', '&copy; 2026 GEINFTEC S.A.
         </div>
     </section>
 
+    <!-- EQUIPO -->
     <section id="equipo">
         <div class="container">
             <h2 class="section-title fade-up"><?php echo getContent('equipo', 'titulo', 'Nuestro Equipo'); ?></h2>
@@ -169,6 +177,7 @@ $footer_copyright = getContent('footer', 'copyright', '&copy; 2026 GEINFTEC S.A.
         </div>
     </section>
 
+    <!-- CONTACTO -->
     <section id="contacto" style="background: rgba(0,0,0,0.2);">
         <div class="container">
             <h2 class="section-title fade-up"><?php echo $contacto_titulo; ?></h2>
@@ -197,6 +206,7 @@ $footer_copyright = getContent('footer', 'copyright', '&copy; 2026 GEINFTEC S.A.
         </div>
     </section>
 
+    <!-- FOOTER -->
     <footer class="footer">
         <div class="container">
             <div class="footer-grid">
@@ -233,6 +243,7 @@ $footer_copyright = getContent('footer', 'copyright', '&copy; 2026 GEINFTEC S.A.
         </div>
     </footer>
 
+    <!-- Botón volver arriba -->
     <button id="back-to-top" aria-label="Volver arriba">↑</button>
 
     <script src="script.js"></script>

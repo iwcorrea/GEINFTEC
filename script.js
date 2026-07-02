@@ -90,12 +90,12 @@
     });
 
     // ------------------------------------------------------------
-    // 2. TÍTULO ROTATIVO (máquina de escribir) con data-phrases
+    // 2. TÍTULO ROTATIVO (máquina de escribir)
     // ------------------------------------------------------------
     const rotatingEl = document.getElementById('rotating-text');
+    // Leer las frases desde el atributo data-phrases
     let phrases = [];
-    // Tomar frases del atributo data-phrases
-    if (rotatingEl && rotatingEl.dataset.phrases) {
+    if (rotatingEl.dataset.phrases) {
         try {
             phrases = JSON.parse(rotatingEl.dataset.phrases);
         } catch(e) {
@@ -141,18 +141,16 @@
     // ------------------------------------------------------------
     const hamburger = document.getElementById('hamburger');
     const navLinks = document.getElementById('nav-links');
-    if (hamburger && navLinks) {
-        hamburger.addEventListener('click', () => {
-            hamburger.classList.toggle('active');
-            navLinks.classList.toggle('open');
+    hamburger.addEventListener('click', () => {
+        hamburger.classList.toggle('active');
+        navLinks.classList.toggle('open');
+    });
+    navLinks.querySelectorAll('a').forEach(link => {
+        link.addEventListener('click', () => {
+            hamburger.classList.remove('active');
+            navLinks.classList.remove('open');
         });
-        navLinks.querySelectorAll('a').forEach(link => {
-            link.addEventListener('click', () => {
-                hamburger.classList.remove('active');
-                navLinks.classList.remove('open');
-            });
-        });
-    }
+    });
 
     // ------------------------------------------------------------
     // 4. BARRA DE PROGRESO DE LECTURA
@@ -162,7 +160,7 @@
         const scrollTop = window.scrollY;
         const docHeight = document.documentElement.scrollHeight - window.innerHeight;
         const progress = (scrollTop / docHeight) * 100;
-        if (progressBar) progressBar.style.width = progress + '%';
+        progressBar.style.width = progress + '%';
     });
 
     // ------------------------------------------------------------
@@ -176,11 +174,9 @@
             backBtn.classList.remove('visible');
         }
     });
-    if (backBtn) {
-        backBtn.addEventListener('click', () => {
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        });
-    }
+    backBtn.addEventListener('click', () => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
 
     // ------------------------------------------------------------
     // 6. INTERSECTION OBSERVER – Apariciones y contadores
@@ -233,70 +229,61 @@
     const contactForm = document.getElementById('contactForm');
     const formFeedback = document.getElementById('formFeedback');
 
-    if (contactForm) {
-        contactForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const nombre = document.getElementById('nombre');
-            const email = document.getElementById('email');
-            const mensaje = document.getElementById('mensaje');
-            let valid = true;
+    contactForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const nombre = document.getElementById('nombre');
+        const email = document.getElementById('email');
+        const mensaje = document.getElementById('mensaje');
+        let valid = true;
 
-            [nombre, email, mensaje].forEach(field => {
-                field.classList.remove('error');
-                if (!field.value.trim()) {
-                    field.classList.add('error');
-                    valid = false;
-                }
-            });
-
-            if (email.value.trim() && !email.value.includes('@')) {
-                email.classList.add('error');
+        [nombre, email, mensaje].forEach(field => {
+            field.classList.remove('error');
+            if (!field.value.trim()) {
+                field.classList.add('error');
                 valid = false;
             }
-
-            if (valid) {
-                formFeedback.textContent = '✅ Mensaje enviado con éxito. ¡Te contactaremos pronto!';
-                formFeedback.style.color = 'var(--cyan)';
-                contactForm.reset();
-            } else {
-                formFeedback.textContent = '⚠️ Por favor completa todos los campos correctamente.';
-                formFeedback.style.color = '#ff6b6b';
-            }
         });
-    }
+
+        if (email.value.trim() && !email.value.includes('@')) {
+            email.classList.add('error');
+            valid = false;
+        }
+
+        if (valid) {
+            formFeedback.textContent = '✅ Mensaje enviado con éxito. ¡Te contactaremos pronto!';
+            formFeedback.style.color = 'var(--cyan)';
+            contactForm.reset();
+        } else {
+            formFeedback.textContent = '⚠️ Por favor completa todos los campos correctamente.';
+            formFeedback.style.color = '#ff6b6b';
+        }
+    });
 
     // ------------------------------------------------------------
     // 9. NEWSLETTER
     // ------------------------------------------------------------
     const newsletterForm = document.getElementById('newsletterForm');
     const nlFeedback = document.getElementById('newsletterFeedback');
-    if (newsletterForm) {
-        newsletterForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const input = newsletterForm.querySelector('input[type="email"]');
-            if (input.value.trim() && input.value.includes('@')) {
-                nlFeedback.textContent = '✅ ¡Suscripción exitosa! Revisa tu correo.';
-                nlFeedback.style.color = 'var(--cyan)';
-                newsletterForm.reset();
-            } else {
-                nlFeedback.textContent = '⚠️ Ingresa un correo válido.';
-                nlFeedback.style.color = '#ff6b6b';
-            }
-        });
-    }
+    newsletterForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const input = newsletterForm.querySelector('input[type="email"]');
+        if (input.value.trim() && input.value.includes('@')) {
+            nlFeedback.textContent = '✅ ¡Suscripción exitosa! Revisa tu correo.';
+            nlFeedback.style.color = 'var(--cyan)';
+            newsletterForm.reset();
+        } else {
+            nlFeedback.textContent = '⚠️ Ingresa un correo válido.';
+            nlFeedback.style.color = '#ff6b6b';
+        }
+    });
 
     // ------------------------------------------------------------
-    // 10. LAZY LOADING para imágenes (ya usan loading="lazy")
-    // ------------------------------------------------------------
-    // No es necesario añadir más, el navegador lo maneja.
-
-    // ------------------------------------------------------------
-    // 11. PARALLAX suave en hero (movimiento del contenido)
+    // 10. PARALLAX suave en hero (movimiento sutil del contenido)
     // ------------------------------------------------------------
     const heroContent = document.querySelector('.hero-content');
     window.addEventListener('scroll', () => {
         const scrolled = window.scrollY;
-        if (scrolled < window.innerHeight && heroContent) {
+        if (scrolled < window.innerHeight) {
             heroContent.style.transform = `translateY(${scrolled * 0.05}px)`;
         }
     });

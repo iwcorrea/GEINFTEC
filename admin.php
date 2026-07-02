@@ -50,7 +50,6 @@ $contenido = getAllContent();
     <title>Administrador GEINFTEC</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
-        /* Estilos básicos para el admin */
         body { font-family: 'Inter', sans-serif; background: #0b132b; color: #f8fafc; padding: 2rem; }
         .container { max-width: 1200px; margin: 0 auto; }
         h1 { color: #00f5d4; }

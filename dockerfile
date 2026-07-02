@@ -1,16 +1,16 @@
 FROM php:8.2-apache
 
-# Instalar extensiones necesarias (mysqli)
-RUN docker-php-ext-install mysqli && docker-php-ext-enable mysqli
-
-# Habilitar mod_rewrite para URLs limpias (opcional)
+# Habilitar mod_rewrite para URLs amigables (opcional)
 RUN a2enmod rewrite
 
-# Copiar todo el código al directorio de Apache
+# Instalar extensiones de PHP necesarias (mysqli ya está, pero podemos asegurarlo)
+RUN docker-php-ext-install mysqli && docker-php-ext-enable mysqli
+
+# Crear carpeta uploads y dar permisos de escritura
+RUN mkdir -p /var/www/html/uploads && chown -R www-data:www-data /var/www/html/uploads
+
+# Copiar todos los archivos del proyecto al contenedor
 COPY . /var/www/html/
 
-# Cambiar propietario para que Apache pueda escribir en uploads
-RUN chown -R www-data:www-data /var/www/html && chmod -R 755 /var/www/html
-
-# Exponer puerto 80
+# Exponer el puerto 80
 EXPOSE 80

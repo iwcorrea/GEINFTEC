@@ -15,7 +15,8 @@ function getContent($seccion, $clave, $default = '') {
 
 function updateContent($seccion, $clave, $valor) {
     global $conn;
-    $stmt = $conn->prepare("INSERT INTO contenido (seccion, clave, valor) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE valor = ?");
+    $stmt = $conn->prepare("INSERT INTO contenido (seccion, clave, valor) VALUES (?, ?, ?) 
+                            ON DUPLICATE KEY UPDATE valor = ?");
     $stmt->bind_param("ssss", $seccion, $clave, $valor, $valor);
     return $stmt->execute();
 }
