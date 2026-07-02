@@ -1,0 +1,7 @@
+{
+    "name": "geinftec/sitio",
+    "description": "Sitio web de GEINFTEC S.A.S.",
+    "require": {
+      "php": ">=7.4"
+    }
+  }
