@@ -1,51 +1,43 @@
 <?php
-require_once __DIR__ . '/config.php';
+require_once 'config.php';
 
-/**
- * Obtiene el valor de una clave de contenido
- */
 function getContent($seccion, $clave, $default = '') {
-    global $pdo;
-    $stmt = $pdo->prepare("SELECT valor FROM contenido WHERE seccion = ? AND clave = ?");
-    $stmt->execute([$seccion, $clave]);
-    $row = $stmt->fetch();
-    return $row ? $row['valor'] : $default;
+    global $conn;
+    $stmt = $conn->prepare("SELECT valor FROM contenido WHERE seccion = ? AND clave = ?");
+    $stmt->bind_param("ss", $seccion, $clave);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    if ($row = $result->fetch_assoc()) {
+        return $row['valor'];
+    }
+    return $default;
 }
 
-/**
- * Actualiza o inserta un valor de contenido
- */
 function updateContent($seccion, $clave, $valor) {
-    global $pdo;
-    $stmt = $pdo->prepare("INSERT INTO contenido (seccion, clave, valor) VALUES (?, ?, ?) 
-                            ON CONFLICT (seccion, clave) DO UPDATE SET valor = EXCLUDED.valor");
-    // Para MySQL usar: ON DUPLICATE KEY UPDATE valor = VALUES(valor)
-    // Pero con PostgreSQL usamos ON CONFLICT
-    return $stmt->execute([$seccion, $clave, $valor]);
+    global $conn;
+    $stmt = $conn->prepare("INSERT INTO contenido (seccion, clave, valor) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE valor = ?");
+    $stmt->bind_param("ssss", $seccion, $clave, $valor, $valor);
+    return $stmt->execute();
 }
 
-/**
- * Obtiene todos los datos de una sección (clave => valor)
- */
 function getSection($seccion) {
-    global $pdo;
-    $stmt = $pdo->prepare("SELECT clave, valor FROM contenido WHERE seccion = ?");
-    $stmt->execute([$seccion]);
+    global $conn;
+    $stmt = $conn->prepare("SELECT clave, valor FROM contenido WHERE seccion = ?");
+    $stmt->bind_param("s", $seccion);
+    $stmt->execute();
+    $result = $stmt->get_result();
     $data = [];
-    while ($row = $stmt->fetch()) {
+    while ($row = $result->fetch_assoc()) {
         $data[$row['clave']] = $row['valor'];
     }
     return $data;
 }
 
-/**
- * Obtiene todas las secciones y claves (para el admin)
- */
 function getAllContent() {
-    global $pdo;
-    $stmt = $pdo->query("SELECT seccion, clave, valor FROM contenido ORDER BY seccion, clave");
+    global $conn;
+    $result = $conn->query("SELECT seccion, clave, valor FROM contenido ORDER BY seccion, clave");
     $data = [];
-    while ($row = $stmt->fetch()) {
+    while ($row = $result->fetch_assoc()) {
         $data[$row['seccion']][$row['clave']] = $row['valor'];
     }
     return $data;

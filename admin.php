@@ -4,7 +4,6 @@ require_once 'funciones.php';
 $mensaje = '';
 $error = '';
 
-// Procesar actualización
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     if ($_POST['action'] === 'update') {
         $seccion = $_POST['seccion'] ?? '';
@@ -18,7 +17,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             }
         }
     } elseif ($_POST['action'] === 'upload_image') {
-        // Subir imagen
         $seccion = $_POST['seccion'] ?? '';
         $clave = $_POST['clave'] ?? '';
         if ($seccion && $clave && isset($_FILES['imagen']) && $_FILES['imagen']['error'] === UPLOAD_ERR_OK) {
@@ -42,7 +40,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     }
 }
 
-// Obtener todo el contenido
 $contenido = getAllContent();
 ?>
 <!DOCTYPE html>

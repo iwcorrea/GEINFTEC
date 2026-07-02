@@ -1,18 +1,16 @@
--- Estructura de tabla para `contenido` (PostgreSQL)
-CREATE TABLE IF NOT EXISTS contenido (
-    id SERIAL PRIMARY KEY,
-    seccion VARCHAR(50) NOT NULL,
-    clave VARCHAR(50) NOT NULL,
-    valor TEXT NOT NULL,
-    UNIQUE(seccion, clave)
-);
+CREATE TABLE IF NOT EXISTS `contenido` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `seccion` varchar(50) NOT NULL,
+  `clave` varchar(50) NOT NULL,
+  `valor` text NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `seccion_clave` (`seccion`,`clave`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- Insertar datos por defecto
-INSERT INTO contenido (seccion, clave, valor) VALUES
+INSERT INTO `contenido` (`seccion`, `clave`, `valor`) VALUES
 ('hero', 'titulo', 'Innovación que construye el futuro'),
 ('hero', 'subtitulo', 'Ingeniería, construcción y desarrollo de software con visión de vanguardia.'),
 ('hero', 'frases', '["Ingeniería de vanguardia","Construcción inteligente","Software que transforma"]'),
-('hero', 'imagen_fondo', ''),
 ('servicios', 'titulo', 'Nuestros Servicios'),
 ('servicios', 'subtitulo', 'Soluciones integrales que combinan ingeniería de calidad con tecnología de punta.'),
 ('proyectos', 'titulo', 'Proyectos Destacados'),
@@ -21,6 +19,10 @@ INSERT INTO contenido (seccion, clave, valor) VALUES
 ('tecnologias', 'subtitulo', 'Herramientas y plataformas con las que trabajamos día a día.'),
 ('estadisticas', 'titulo', 'En números'),
 ('estadisticas', 'subtitulo', 'La confianza de nuestros clientes y el impacto de nuestros proyectos.'),
+('estadisticas', 'anos', '12'),
+('estadisticas', 'proyectos', '150'),
+('estadisticas', 'clientes', '98'),
+('estadisticas', 'satisfaccion', '100'),
 ('equipo', 'titulo', 'Nuestro Equipo'),
 ('equipo', 'subtitulo', 'Profesionales apasionados por la innovación y la excelencia.'),
 ('contacto', 'titulo', 'Contáctanos ahora'),

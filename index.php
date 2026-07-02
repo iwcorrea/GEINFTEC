@@ -1,13 +1,11 @@
 <?php
 require_once 'funciones.php';
 
-// Obtener datos del héroe
 $hero_titulo = getContent('hero', 'titulo', 'Innovación que construye el futuro');
 $hero_subtitulo = getContent('hero', 'subtitulo', 'Ingeniería, construcción y desarrollo de software con visión de vanguardia.');
 $hero_frases = getContent('hero', 'frases', '["Ingeniería de vanguardia","Construcción inteligente","Software que transforma"]');
 $hero_frases_array = json_decode($hero_frases, true) ?: ["Ingeniería de vanguardia","Construcción inteligente","Software que transforma"];
 
-// Servicios (datos fijos o también dinámicos, pero aquí los dejamos fijos para simplificar)
 $servicios = [
     ['icon' => '🏗️', 'titulo' => 'Ingeniería Civil', 'desc' => 'Diseño y construcción de infraestructura resistente y sostenible.'],
     ['icon' => '💻', 'titulo' => 'Desarrollo Software', 'desc' => 'Aplicaciones web, móviles y sistemas a la medida con arquitecturas modernas.'],
@@ -17,17 +15,14 @@ $servicios = [
     ['icon' => '🔒', 'titulo' => 'Ciberseguridad', 'desc' => 'Auditorías, protección de datos y cumplimiento normativo.']
 ];
 
-// Proyectos (también podrían ser dinámicos, pero los dejamos fijos)
 $proyectos = [
     ['img' => 'https://images.unsplash.com/photo-1541888946425-d81bb19240f5?w=600&h=400&fit=crop', 'titulo' => 'Puente Colgante Moderno', 'desc' => 'Diseño estructural y construcción de un puente peatonal con materiales compuestos.'],
     ['img' => 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=600&h=400&fit=crop', 'titulo' => 'Plataforma de Gestión', 'desc' => 'Sistema ERP para empresas de construcción con módulos de inventario y finanzas.'],
     ['img' => 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=600&h=400&fit=crop', 'titulo' => 'Edificio Inteligente', 'desc' => 'Automatización y control de iluminación, climatización y seguridad mediante IoT.']
 ];
 
-// Tecnologías (fijas)
 $tecnologias = ['React', 'Node.js', 'Python', 'AWS', 'Docker', 'PostgreSQL', 'Flutter', 'TypeScript'];
 
-// Estadísticas (dinámicas desde BD)
 $stats = [
     ['clave' => 'anos', 'label' => 'Años de experiencia', 'default' => 12],
     ['clave' => 'proyectos', 'label' => 'Proyectos entregados', 'default' => 150],
@@ -39,7 +34,6 @@ foreach ($stats as &$stat) {
 }
 unset($stat);
 
-// Equipo (fijo)
 $equipo = [
     ['img' => 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=200&h=200&fit=crop&crop=face', 'nombre' => 'Carlos Mendoza', 'cargo' => 'CEO & Fundador', 'bio' => 'Ingeniero civil con 20 años de experiencia en grandes infraestructuras.'],
     ['img' => 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=200&h=200&fit=crop&crop=face', 'nombre' => 'Laura Fernández', 'cargo' => 'CTO', 'bio' => 'Especialista en arquitectura de software y sistemas distribuidos.'],
@@ -47,7 +41,6 @@ $equipo = [
     ['img' => 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=200&fit=crop&crop=face', 'nombre' => 'Andrés Ruiz', 'cargo' => 'Ingeniero de Software', 'bio' => 'Desarrollador full-stack apasionado por la IA y el cloud computing.']
 ];
 
-// Contacto y footer
 $contacto_titulo = getContent('contacto', 'titulo', 'Contáctanos ahora');
 $contacto_subtitulo = getContent('contacto', 'subtitulo', 'Estamos listos para hacer realidad tu próximo proyecto.');
 $footer_texto = getContent('footer', 'texto', 'Ingeniería, construcción y tecnología para un futuro sostenible e inteligente.');
@@ -65,10 +58,8 @@ $footer_copyright = getContent('footer', 'copyright', '&copy; 2026 GEINFTEC S.A.
     <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-    <!-- Progress Bar -->
     <div id="progress-bar"></div>
 
-    <!-- HEADER -->
     <header class="header" id="header">
         <div class="container">
             <div class="logo">GEINFTEC <span>S.A.S.</span></div>
@@ -86,7 +77,6 @@ $footer_copyright = getContent('footer', 'copyright', '&copy; 2026 GEINFTEC S.A.
         </div>
     </header>
 
-    <!-- HERO -->
     <section class="hero" id="hero">
         <canvas id="hero-canvas"></canvas>
         <div class="container hero-content">
@@ -100,7 +90,6 @@ $footer_copyright = getContent('footer', 'copyright', '&copy; 2026 GEINFTEC S.A.
         </div>
     </section>
 
-    <!-- SERVICIOS -->
     <section id="servicios">
         <div class="container">
             <h2 class="section-title fade-up"><?php echo getContent('servicios', 'titulo', 'Nuestros Servicios'); ?></h2>
@@ -117,7 +106,6 @@ $footer_copyright = getContent('footer', 'copyright', '&copy; 2026 GEINFTEC S.A.
         </div>
     </section>
 
-    <!-- PROYECTOS -->
     <section id="proyectos" style="background: rgba(0,0,0,0.2);">
         <div class="container">
             <h2 class="section-title fade-up"><?php echo getContent('proyectos', 'titulo', 'Proyectos Destacados'); ?></h2>
@@ -137,7 +125,6 @@ $footer_copyright = getContent('footer', 'copyright', '&copy; 2026 GEINFTEC S.A.
         </div>
     </section>
 
-    <!-- TECNOLOGÍAS -->
     <section id="tecnologias">
         <div class="container">
             <h2 class="section-title fade-up"><?php echo getContent('tecnologias', 'titulo', 'Tecnologías que impulsamos'); ?></h2>
@@ -150,7 +137,6 @@ $footer_copyright = getContent('footer', 'copyright', '&copy; 2026 GEINFTEC S.A.
         </div>
     </section>
 
-    <!-- ESTADÍSTICAS -->
     <section id="estadisticas" style="background: rgba(0,0,0,0.15);">
         <div class="container">
             <h2 class="section-title fade-up"><?php echo getContent('estadisticas', 'titulo', 'En números'); ?></h2>
@@ -166,7 +152,6 @@ $footer_copyright = getContent('footer', 'copyright', '&copy; 2026 GEINFTEC S.A.
         </div>
     </section>
 
-    <!-- EQUIPO -->
     <section id="equipo">
         <div class="container">
             <h2 class="section-title fade-up"><?php echo getContent('equipo', 'titulo', 'Nuestro Equipo'); ?></h2>
@@ -184,7 +169,6 @@ $footer_copyright = getContent('footer', 'copyright', '&copy; 2026 GEINFTEC S.A.
         </div>
     </section>
 
-    <!-- CONTACTO -->
     <section id="contacto" style="background: rgba(0,0,0,0.2);">
         <div class="container">
             <h2 class="section-title fade-up"><?php echo $contacto_titulo; ?></h2>
@@ -213,7 +197,6 @@ $footer_copyright = getContent('footer', 'copyright', '&copy; 2026 GEINFTEC S.A.
         </div>
     </section>
 
-    <!-- FOOTER -->
     <footer class="footer">
         <div class="container">
             <div class="footer-grid">
@@ -250,7 +233,6 @@ $footer_copyright = getContent('footer', 'copyright', '&copy; 2026 GEINFTEC S.A.
         </div>
     </footer>
 
-    <!-- Botón volver arriba -->
     <button id="back-to-top" aria-label="Volver arriba">↑</button>
 
     <script src="script.js"></script>
