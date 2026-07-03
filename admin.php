@@ -96,6 +96,8 @@ foreach ($contenido as $seccion => $datos) {
         .campo-valor { display: flex; flex-wrap: wrap; gap: 0.5rem; flex: 1; align-items: center; }
         .campo-valor .texto-actual { color: #b0b8d1; font-size: 0.85rem; word-break: break-all; }
         .empty { color: #666; font-style: italic; }
+        .recomendacion { background: rgba(0,245,212,0.08); padding: 0.5rem 1rem; border-radius: 8px; border-left: 3px solid #00f5d4; margin: 0.5rem 0; }
+        .recomendacion strong { color: #00f5d4; }
         @media (max-width: 768px) {
             .campo label { min-width: 100%; }
             .header-admin { flex-direction: column; align-items: stretch; }
@@ -120,7 +122,7 @@ foreach ($contenido as $seccion => $datos) {
     <div class="bienvenida">
         <h2>👋 ¡Hola, administrador!</h2>
         <p>
-            Desde aquí puedes editar <strong>todos los textos, títulos y estadísticas</strong> del sitio.
+            Desde aquí puedes editar <strong>todos los textos, títulos, estadísticas e imágenes</strong> del sitio.
             Cada campo tiene un formulario para actualizar su valor. <br>
             <span style="color:#00f5d4;">✅ Los cambios se reflejan al instante en la página pública.</span>
         </p>
@@ -186,6 +188,9 @@ foreach ($contenido as $seccion => $datos) {
                     </div>
                 </div>
             <?php endforeach; ?>
+            <div class="recomendacion">
+                💡 <strong>Tip:</strong> Si quieres añadir imágenes para proyectos o equipo, crea claves como <code>proyectos_img1</code>, <code>equipo_img1</code>, etc., en la sección correspondiente.
+            </div>
         </div>
     <?php endforeach; ?>
 </div>

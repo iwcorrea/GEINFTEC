@@ -30,8 +30,8 @@ $footer_copyright = getContent('footer', 'copyright', '&copy; 2026 GEINFTEC S.A.
 
 // Estadísticas
 $stats = [
-    ['clave' => 'anos', 'label' => 'Años de experiencia', 'default' => 5],
-    ['clave' => 'proyectos', 'label' => 'Proyectos entregados', 'default' => 100],
+    ['clave' => 'anos', 'label' => 'Años de experiencia', 'default' => 12],
+    ['clave' => 'proyectos', 'label' => 'Proyectos entregados', 'default' => 150],
     ['clave' => 'clientes', 'label' => 'Clientes satisfechos', 'default' => 98],
     ['clave' => 'satisfaccion', 'label' => '% Calidad garantizada', 'default' => 100]
 ];
@@ -39,6 +39,53 @@ foreach ($stats as &$stat) {
     $stat['valor'] = getContent('estadisticas', $stat['clave'], $stat['default']);
 }
 unset($stat);
+
+// Proyectos - imágenes dinámicas
+$proyectos = [
+    [
+        'img' => getContent('proyectos', 'proyecto1_imagen', 'https://images.unsplash.com/photo-1541888946425-d81bb19240f5?w=600&h=400&fit=crop'),
+        'titulo' => 'Puente Colgante Moderno',
+        'desc' => 'Diseño estructural y construcción de un puente peatonal con materiales compuestos.'
+    ],
+    [
+        'img' => getContent('proyectos', 'proyecto2_imagen', 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=600&h=400&fit=crop'),
+        'titulo' => 'Plataforma de Gestión',
+        'desc' => 'Sistema ERP para empresas de construcción con módulos de inventario y finanzas.'
+    ],
+    [
+        'img' => getContent('proyectos', 'proyecto3_imagen', 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=600&h=400&fit=crop'),
+        'titulo' => 'Edificio Inteligente',
+        'desc' => 'Automatización y control de iluminación, climatización y seguridad mediante IoT.'
+    ]
+];
+
+// Equipo - imágenes dinámicas
+$equipo = [
+    [
+        'img' => getContent('equipo', 'miembro1_imagen', 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=200&h=200&fit=crop&crop=face'),
+        'nombre' => 'Carlos Mendoza',
+        'cargo' => 'CEO & Fundador',
+        'bio' => 'Ingeniero civil con 20 años de experiencia en grandes infraestructuras.'
+    ],
+    [
+        'img' => getContent('equipo', 'miembro2_imagen', 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=200&h=200&fit=crop&crop=face'),
+        'nombre' => 'Laura Fernández',
+        'cargo' => 'CTO',
+        'bio' => 'Especialista en arquitectura de software y sistemas distribuidos.'
+    ],
+    [
+        'img' => getContent('equipo', 'miembro3_imagen', 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=200&h=200&fit=crop&crop=face'),
+        'nombre' => 'María Gómez',
+        'cargo' => 'Project Manager',
+        'bio' => 'Lidera equipos multidisciplinarios con metodologías ágiles.'
+    ],
+    [
+        'img' => getContent('equipo', 'miembro4_imagen', 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=200&fit=crop&crop=face'),
+        'nombre' => 'Andrés Ruiz',
+        'cargo' => 'Ingeniero de Software',
+        'bio' => 'Desarrollador full-stack apasionado por la IA y el cloud computing.'
+    ]
+];
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -137,30 +184,16 @@ unset($stat);
             <h2 class="section-title fade-up"><?php echo $proyectos_titulo; ?> <span>Destacados</span></h2>
             <p class="section-sub fade-up"><?php echo $proyectos_sub; ?></p>
             <div class="grid-3">
+                <?php foreach ($proyectos as $proy): ?>
                 <div class="card project-card fade-up">
-                    <img src="https://images.unsplash.com/photo-1541888946425-d81bb19240f5?w=600&h=400&fit=crop" alt="Construcción de puente" loading="lazy" />
+                    <img src="<?php echo $proy['img']; ?>" alt="<?php echo $proy['titulo']; ?>" loading="lazy" />
                     <div class="content">
-                        <h3>Puente Colgante Moderno</h3>
-                        <p>Diseño estructural y construcción de un puente peatonal con materiales compuestos.</p>
+                        <h3><?php echo $proy['titulo']; ?></h3>
+                        <p><?php echo $proy['desc']; ?></p>
                         <a href="#" class="btn btn-outline" style="padding:0.4rem 1.2rem; font-size:0.9rem;">Ver más</a>
                     </div>
                 </div>
-                <div class="card project-card fade-up">
-                    <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=600&h=400&fit=crop" alt="Dashboard software" loading="lazy" />
-                    <div class="content">
-                        <h3>Plataforma de Gestión</h3>
-                        <p>Sistema ERP para empresas de construcción con módulos de inventario y finanzas.</p>
-                        <a href="#" class="btn btn-outline" style="padding:0.4rem 1.2rem; font-size:0.9rem;">Ver más</a>
-                    </div>
-                </div>
-                <div class="card project-card fade-up">
-                    <img src="https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=600&h=400&fit=crop" alt="Edificio inteligente" loading="lazy" />
-                    <div class="content">
-                        <h3>Edificio Inteligente</h3>
-                        <p>Automatización y control de iluminación, climatización y seguridad mediante IoT.</p>
-                        <a href="#" class="btn btn-outline" style="padding:0.4rem 1.2rem; font-size:0.9rem;">Ver más</a>
-                    </div>
-                </div>
+                <?php endforeach; ?>
             </div>
         </div>
     </section>
@@ -205,30 +238,14 @@ unset($stat);
             <h2 class="section-title fade-up"><?php echo $equipo_titulo; ?> <span>Equipo</span></h2>
             <p class="section-sub fade-up"><?php echo $equipo_sub; ?></p>
             <div class="grid-4">
+                <?php foreach ($equipo as $member): ?>
                 <div class="team-card fade-up">
-                    <img src="https://images.unsplash.com/photo-1560250097-0b93528c311a?w=200&h=200&fit=crop&crop=face" alt="CEO" loading="lazy" />
-                    <h4>Wilson Correa</h4>
-                    <div class="role">CEO & Fundador</div>
-                    <div class="bio">Ingeniero industrial con 6 años de experiencia en grandes industrias.</div>
+                    <img src="<?php echo $member['img']; ?>" alt="<?php echo $member['nombre']; ?>" loading="lazy" />
+                    <h4><?php echo $member['nombre']; ?></h4>
+                    <div class="role"><?php echo $member['cargo']; ?></div>
+                    <div class="bio"><?php echo $member['bio']; ?></div>
                 </div>
-                <div class="team-card fade-up">
-                    <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=200&h=200&fit=crop&crop=face" alt="CTO" loading="lazy" />
-                    <h4>Laura Fernández</h4>
-                    <div class="role">CTO</div>
-                    <div class="bio">Especialista en arquitectura de software y sistemas distribuidos.</div>
-                </div>
-                <div class="team-card fade-up">
-                    <img src="https://images.unsplash.com/photo-1580489944761-15a19d654956?w=200&h=200&fit=crop&crop=face" alt="PM" loading="lazy" />
-                    <h4>María Gómez</h4>
-                    <div class="role">Project Manager</div>
-                    <div class="bio">Lidera equipos multidisciplinarios con metodologías ágiles.</div>
-                </div>
-                <div class="team-card fade-up">
-                    <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=200&fit=crop&crop=face" alt="Ingeniero" loading="lazy" />
-                    <h4>Andrés Ruiz</h4>
-                    <div class="role">Ingeniero de Software</div>
-                    <div class="bio">Desarrollador full-stack apasionado por la IA y el cloud computing.</div>
-                </div>
+                <?php endforeach; ?>
             </div>
         </div>
     </section>
@@ -250,8 +267,9 @@ unset($stat);
                     </form>
                 </div>
                 <div class="contact-info fade-up">
-                    <div class="item"><span class="icon">📍</span> Cordoba, Colombia</div>
-                    <div class="item"><span class="icon">✉️</span> geinftec@outlook.com</div>
+                    <div class="item"><span class="icon">📍</span> Bogotá, Colombia</div>
+                    <div class="item"><span class="icon">📞</span> +57 300 123 4567</div>
+                    <div class="item"><span class="icon">✉️</span> contacto@geinftec.com</div>
                     <div class="item"><span class="icon">🕒</span> Lun – Vie: 8:00 am – 6:00 pm</div>
                     <div class="map-container">
                         <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3976.785140536432!2d-74.08373268519861!3d4.624548343699416!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8e3f9a3f5c1b2e6b%3A0x5f7b6c8a0a2b9c0d!2sBogot%C3%A1!5e0!3m2!1ses!2sco!4v1650000000000!5m2!1ses!2sco" allowfullscreen loading="lazy"></iframe>
@@ -294,7 +312,13 @@ unset($stat);
                     <div id="newsletterFeedback" style="margin-top:0.5rem; color:var(--cyan); font-size:0.9rem;"></div>
                 </div>
             </div>
-            <div class="copyright"><?php echo $footer_copyright; ?></div>
+            <div class="copyright">
+                <?php echo $footer_copyright; ?>
+                <!-- Enlace oculto para admin -->
+                <span style="margin-left: 1rem; opacity: 0.3; font-size: 0.8rem;">
+                    <a href="login.php" style="color: #b0b8d1; text-decoration: none;">🔑 Admin</a>
+                </span>
+            </div>
         </div>
     </footer>
 
