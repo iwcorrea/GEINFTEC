@@ -1,17 +1,20 @@
 FROM php:8.2-apache
 
-# Instalar extensiones para PostgreSQL
-RUN apt-get update && apt-get install -y libpq-dev \
-    && docker-php-ext-install pdo pdo_pgsql
+# Instalar extensiones para PostgreSQL y MySQL (por si acaso)
+RUN apt-get update && apt-get install -y libpq-dev && \
+    docker-php-ext-install pdo pdo_pgsql mysqli && \
+    docker-php-ext-enable pdo_pgsql
 
-# Habilitar mod_rewrite (opcional)
+# Habilitar mod_rewrite
 RUN a2enmod rewrite
 
-# Copiar todos los archivos al directorio de Apache
+# Copiar todos los archivos
 COPY . /var/www/html/
 
-# Establecer permisos para la carpeta uploads (si existe)
-RUN chown -R www-data:www-data /var/www/html/uploads 2>/dev/null || true
+# Crear directorio uploads con permisos
+RUN mkdir -p /var/www/html/uploads && chmod 755 /var/www/html/uploads
 
-# Exponer puerto 80
+# Configurar DocumentRoot
+WORKDIR /var/www/html
+
 EXPOSE 80

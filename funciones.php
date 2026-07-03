@@ -2,10 +2,10 @@
 require_once 'config.php';
 
 function getContent($seccion, $clave, $default = '') {
-    global $pdo;
+    global $conn;
     try {
-        $stmt = $pdo->prepare("SELECT valor FROM contenido WHERE seccion = :seccion AND clave = :clave");
-        $stmt->execute(['seccion' => $seccion, 'clave' => $clave]);
+        $stmt = $conn->prepare("SELECT valor FROM contenido WHERE seccion = ? AND clave = ?");
+        $stmt->execute([$seccion, $clave]);
         $row = $stmt->fetch();
         if ($row) {
             return $row['valor'];
@@ -17,12 +17,11 @@ function getContent($seccion, $clave, $default = '') {
 }
 
 function updateContent($seccion, $clave, $valor) {
-    global $pdo;
+    global $conn;
     try {
-        $stmt = $pdo->prepare("INSERT INTO contenido (seccion, clave, valor) VALUES (:seccion, :clave, :valor)
+        $stmt = $conn->prepare("INSERT INTO contenido (seccion, clave, valor) VALUES (?, ?, ?) 
                                 ON CONFLICT (seccion, clave) DO UPDATE SET valor = EXCLUDED.valor");
-        $stmt->execute(['seccion' => $seccion, 'clave' => $clave, 'valor' => $valor]);
-        return true;
+        return $stmt->execute([$seccion, $clave, $valor]);
     } catch (PDOException $e) {
         error_log("Error en updateContent: " . $e->getMessage());
         return false;
@@ -30,10 +29,10 @@ function updateContent($seccion, $clave, $valor) {
 }
 
 function getSection($seccion) {
-    global $pdo;
+    global $conn;
     try {
-        $stmt = $pdo->prepare("SELECT clave, valor FROM contenido WHERE seccion = :seccion");
-        $stmt->execute(['seccion' => $seccion]);
+        $stmt = $conn->prepare("SELECT clave, valor FROM contenido WHERE seccion = ?");
+        $stmt->execute([$seccion]);
         $data = [];
         while ($row = $stmt->fetch()) {
             $data[$row['clave']] = $row['valor'];
@@ -46,9 +45,9 @@ function getSection($seccion) {
 }
 
 function getAllContent() {
-    global $pdo;
+    global $conn;
     try {
-        $stmt = $pdo->query("SELECT seccion, clave, valor FROM contenido ORDER BY seccion, clave");
+        $stmt = $conn->query("SELECT seccion, clave, valor FROM contenido ORDER BY seccion, clave");
         $data = [];
         while ($row = $stmt->fetch()) {
             $data[$row['seccion']][$row['clave']] = $row['valor'];

@@ -93,7 +93,6 @@
     // 2. TÍTULO ROTATIVO (máquina de escribir)
     // ------------------------------------------------------------
     const rotatingEl = document.getElementById('rotating-text');
-    // Leer las frases desde el atributo data-phrases
     let phrases = [];
     if (rotatingEl.dataset.phrases) {
         try {
@@ -104,7 +103,6 @@
     } else {
         phrases = ["Ingeniería de vanguardia", "Construcción inteligente", "Software que transforma"];
     }
-
     let phraseIndex = 0;
     let charIndex = 0;
     let isDeleting = false;
@@ -215,7 +213,6 @@
         }, 25);
     }
 
-    // También observar las estadísticas directamente
     document.querySelectorAll('.stat-number').forEach(el => {
         const parent = el.closest('.stat-card');
         if (parent) {
@@ -278,7 +275,14 @@
     });
 
     // ------------------------------------------------------------
-    // 10. PARALLAX suave en hero (movimiento sutil del contenido)
+    // 10. LAZY LOADING para imágenes (Intersection Observer)
+    // ------------------------------------------------------------
+    document.querySelectorAll('img[loading="lazy"]').forEach(img => {
+        observer.observe(img);
+    });
+
+    // ------------------------------------------------------------
+    // 11. PARALLAX suave en hero
     // ------------------------------------------------------------
     const heroContent = document.querySelector('.hero-content');
     window.addEventListener('scroll', () => {

@@ -131,6 +131,7 @@
        width: 100%;
    }
    
+   /* Hamburguesa */
    .hamburger {
        display: none;
        flex-direction: column;
@@ -237,6 +238,7 @@
        background: var(--bg-primary);
    }
    
+   /* Fondo malla digital / red neuronal (Canvas) */
    #hero-canvas {
        position: absolute;
        top: 0;
@@ -374,7 +376,7 @@
    }
    
    /* ============================================================
-      SERVICIOS
+      SERVICIOS (hover 3D con transform)
       ============================================================ */
    .service-card {
        text-align: center;

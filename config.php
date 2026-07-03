@@ -1,38 +1,26 @@
 <?php
-// config.php - Conexión a PostgreSQL mediante PDO y variables de entorno
+// config.php - Conexión a PostgreSQL con PDO usando variables de entorno
 
+// Obtener variables de entorno (definidas en Render)
 $host = getenv('DB_HOST') ?: 'localhost';
 $port = getenv('DB_PORT') ?: '5432';
-$db   = getenv('DB_NAME') ?: 'geinftec_db';
-$user = getenv('DB_USER') ?: 'admin_user';
-$pass = getenv('DB_PASS') ?: '';
-
-// Mostrar errores para depuración (en producción desactivar)
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
+$dbname = getenv('DB_NAME') ?: 'geinftec_db';
+$user = getenv('DB_USER') ?: 'postgres';
+$password = getenv('DB_PASS') ?: '';
 
 // DSN para PostgreSQL
-$dsn = "pgsql:host=$host;port=$port;dbname=$db;";
+$dsn = "pgsql:host=$host;port=$port;dbname=$dbname";
 
 try {
-    $pdo = new PDO($dsn, $user, $pass, [
+    $pdo = new PDO($dsn, $user, $password, [
         PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
         PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
         PDO::ATTR_EMULATE_PREPARES => false,
     ]);
 } catch (PDOException $e) {
-    die("❌ Error de conexión a la base de datos PostgreSQL: " . $e->getMessage() .
-        "<br>Host: $host | Usuario: $user | Base: $db");
+    die("❌ Error de conexión a la base de datos: " . $e->getMessage());
 }
 
-// Guardar la conexión en una variable global para usar en funciones
-$GLOBALS['pdo'] = $pdo;
-
-// Definir constantes para acceso rápido
-define('DB_HOST', $host);
-define('DB_PORT', $port);
-define('DB_NAME', $db);
-define('DB_USER', $user);
-define('DB_PASS', $pass);
+// Guardar la conexión en una variable global para usarla en funciones.php
+$conn = $pdo;
 ?>

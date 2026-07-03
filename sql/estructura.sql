@@ -1,4 +1,4 @@
--- Crear tabla contenido (si no existe)
+-- Estructura de tabla para `contenido` (PostgreSQL)
 CREATE TABLE IF NOT EXISTS contenido (
     id SERIAL PRIMARY KEY,
     seccion VARCHAR(50) NOT NULL,
@@ -29,4 +29,5 @@ INSERT INTO contenido (seccion, clave, valor) VALUES
 ('contacto', 'titulo', 'Contáctanos ahora'),
 ('contacto', 'subtitulo', 'Estamos listos para hacer realidad tu próximo proyecto.'),
 ('footer', 'texto', 'Ingeniería, construcción y tecnología para un futuro sostenible e inteligente.'),
-('footer', 'copyright', '&copy; 2026 GEINFTEC S.A.S. Todos los derechos reservados. | Diseñado con 💙 en Colombia.');
+('footer', 'copyright', '&copy; 2026 GEINFTEC S.A.S. Todos los derechos reservados. | Diseñado con 💙 en Colombia.')
+ON CONFLICT (seccion, clave) DO NOTHING;
