@@ -132,18 +132,3 @@ Si deseas contribuir, por favor haz un fork del repositorio y envía un pull req
 Este proyecto es propiedad de GEINFTEC S.A.S. y se distribuye bajo licencia privada.
 
 Desarrollado con 💙 en Colombia.
-
-text
-
----
-
-## 📌 Instrucciones finales para subir a Render
-
-1. **Reemplaza todos los archivos** en tu repositorio con los que te acabo de proporcionar (especialmente `index.php`, `admin.php`, `login.php`, `logout.php`, `config.php` y `README.md`).
-2. **Asegúrate de que el script SQL** se haya ejecutado en tu base de datos de Render con el valor correcto `'Innovación que'` para `hero.titulo`.
-3. **Sube los cambios** a GitHub:
-   ```bash
-   git add .
-   git commit -m "Corrección del título, login de admin y README"
-   git push origin main
-Render desplegará automáticamente el nuevo código.
