@@ -2,60 +2,42 @@
 require_once 'config.php';
 
 function getContent($seccion, $clave, $default = '') {
-    global $conn;
-    try {
-        $stmt = $conn->prepare("SELECT valor FROM contenido WHERE seccion = ? AND clave = ?");
-        $stmt->execute([$seccion, $clave]);
-        $row = $stmt->fetch();
-        if ($row) {
-            return $row['valor'];
-        }
-    } catch (PDOException $e) {
-        error_log("Error en getContent: " . $e->getMessage());
+    global $db_conn;
+    $result = pg_query_params($db_conn, 'SELECT valor FROM contenido WHERE seccion = $1 AND clave = $2', [$seccion, $clave]);
+    if ($result && pg_num_rows($result) > 0) {
+        $row = pg_fetch_assoc($result);
+        return $row['valor'];
     }
     return $default;
 }
 
 function updateContent($seccion, $clave, $valor) {
-    global $conn;
-    try {
-        $stmt = $conn->prepare("INSERT INTO contenido (seccion, clave, valor) VALUES (?, ?, ?) 
-                                ON CONFLICT (seccion, clave) DO UPDATE SET valor = EXCLUDED.valor");
-        return $stmt->execute([$seccion, $clave, $valor]);
-    } catch (PDOException $e) {
-        error_log("Error en updateContent: " . $e->getMessage());
-        return false;
-    }
+    global $db_conn;
+    $result = pg_query_params($db_conn, 'INSERT INTO contenido (seccion, clave, valor) VALUES ($1, $2, $3) ON CONFLICT (seccion, clave) DO UPDATE SET valor = EXCLUDED.valor', [$seccion, $clave, $valor]);
+    return $result !== false;
 }
 
 function getSection($seccion) {
-    global $conn;
-    try {
-        $stmt = $conn->prepare("SELECT clave, valor FROM contenido WHERE seccion = ?");
-        $stmt->execute([$seccion]);
-        $data = [];
-        while ($row = $stmt->fetch()) {
+    global $db_conn;
+    $result = pg_query_params($db_conn, 'SELECT clave, valor FROM contenido WHERE seccion = $1', [$seccion]);
+    $data = [];
+    if ($result) {
+        while ($row = pg_fetch_assoc($result)) {
             $data[$row['clave']] = $row['valor'];
         }
-        return $data;
-    } catch (PDOException $e) {
-        error_log("Error en getSection: " . $e->getMessage());
-        return [];
     }
+    return $data;
 }
 
 function getAllContent() {
-    global $conn;
-    try {
-        $stmt = $conn->query("SELECT seccion, clave, valor FROM contenido ORDER BY seccion, clave");
-        $data = [];
-        while ($row = $stmt->fetch()) {
+    global $db_conn;
+    $result = pg_query($db_conn, 'SELECT seccion, clave, valor FROM contenido ORDER BY seccion, clave');
+    $data = [];
+    if ($result) {
+        while ($row = pg_fetch_assoc($result)) {
             $data[$row['seccion']][$row['clave']] = $row['valor'];
         }
-        return $data;
-    } catch (PDOException $e) {
-        error_log("Error en getAllContent: " . $e->getMessage());
-        return [];
     }
+    return $data;
 }
 ?>
