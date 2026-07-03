@@ -12,10 +12,8 @@ $error = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $password = $_POST['password'] ?? '';
-    // La contraseña se almacena en una variable de entorno o aquí (hasheada)
-    // Por defecto, la contraseña es "admin123" (puedes cambiarla)
-    $hash = '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi'; // hash de "admin123"
-    if (password_verify($password, $hash)) {
+    // Contraseña fija (cámbiala aquí si quieres)
+    if ($password === 'admin123') {
         $_SESSION['admin_logged'] = true;
         header('Location: admin.php');
         exit;
@@ -41,78 +39,103 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             align-items: center;
             min-height: 100vh;
             margin: 0;
+            padding: 1rem;
         }
         .login-box {
             background: #1c2541;
             padding: 2.5rem;
-            border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.6);
             width: 100%;
             max-width: 400px;
+            border: 1px solid rgba(0,245,212,0.15);
         }
         .login-box h1 {
             color: #00f5d4;
             text-align: center;
-            margin-bottom: 1.5rem;
+            margin-bottom: 0.5rem;
+            font-size: 2rem;
+            font-weight: 700;
+        }
+        .login-box .sub {
+            text-align: center;
+            color: #b0b8d1;
+            margin-bottom: 2rem;
+            font-size: 0.95rem;
         }
         .login-box input {
             width: 100%;
-            padding: 0.8rem 1rem;
-            margin-bottom: 1rem;
+            padding: 0.9rem 1rem;
+            margin-bottom: 1.2rem;
             border: 2px solid transparent;
-            border-radius: 8px;
+            border-radius: 10px;
             background: #0b132b;
             color: #fff;
             font-family: 'Inter', sans-serif;
             font-size: 1rem;
-            transition: border 0.3s;
+            transition: border 0.3s, box-shadow 0.3s;
         }
         .login-box input:focus {
             outline: none;
             border-color: #00f5d4;
+            box-shadow: 0 0 20px rgba(0,245,212,0.15);
         }
         .login-box button {
             width: 100%;
-            padding: 0.8rem;
+            padding: 0.9rem;
             background: #00f5d4;
             color: #0b132b;
             border: none;
             border-radius: 50px;
-            font-weight: 600;
-            font-size: 1rem;
+            font-weight: 700;
+            font-size: 1.05rem;
             cursor: pointer;
-            transition: background 0.3s;
+            transition: background 0.3s, transform 0.2s;
         }
         .login-box button:hover {
             background: #00d4b8;
+            transform: scale(1.02);
         }
         .error {
             color: #ff6b6b;
             text-align: center;
             margin-bottom: 1rem;
+            padding: 0.6rem;
+            background: rgba(255,107,107,0.1);
+            border-radius: 8px;
+            font-weight: 600;
         }
-        .login-box p {
+        .login-box .footer-text {
             text-align: center;
             color: #b0b8d1;
-            font-size: 0.9rem;
-            margin-top: 1rem;
+            font-size: 0.85rem;
+            margin-top: 1.5rem;
         }
-        .login-box a {
+        .login-box .footer-text strong {
             color: #00f5d4;
+        }
+        .login-box .logo-icon {
+            text-align: center;
+            font-size: 3rem;
+            margin-bottom: 0.5rem;
         }
     </style>
 </head>
 <body>
     <div class="login-box">
-        <h1>🔐 Acceso Admin</h1>
+        <div class="logo-icon">🔐</div>
+        <h1>GEINFTEC</h1>
+        <p class="sub">Acceso al panel de administración</p>
         <?php if ($error): ?>
             <div class="error"><?php echo $error; ?></div>
         <?php endif; ?>
         <form method="post">
-            <input type="password" name="password" placeholder="Contraseña" required />
+            <input type="password" name="password" placeholder="Contraseña" required autofocus />
             <button type="submit">Ingresar</button>
         </form>
-        <p>Contraseña por defecto: <strong>admin123</strong></p>
+        <div class="footer-text">
+            Contraseña por defecto: <strong>admin123</strong>
+        </div>
     </div>
 </body>
 </html>
