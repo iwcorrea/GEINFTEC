@@ -30,8 +30,8 @@ $footer_copyright = getContent('footer', 'copyright', '&copy; 2026 GEINFTEC S.A.
 
 // Estadísticas
 $stats = [
-    ['clave' => 'anos', 'label' => 'Años de experiencia', 'default' => 12],
-    ['clave' => 'proyectos', 'label' => 'Proyectos entregados', 'default' => 150],
+    ['clave' => 'anos', 'label' => 'Años de experiencia', 'default' => 5],
+    ['clave' => 'proyectos', 'label' => 'Proyectos entregados', 'default' => 100],
     ['clave' => 'clientes', 'label' => 'Clientes satisfechos', 'default' => 98],
     ['clave' => 'satisfaccion', 'label' => '% Calidad garantizada', 'default' => 100]
 ];
@@ -207,9 +207,9 @@ unset($stat);
             <div class="grid-4">
                 <div class="team-card fade-up">
                     <img src="https://images.unsplash.com/photo-1560250097-0b93528c311a?w=200&h=200&fit=crop&crop=face" alt="CEO" loading="lazy" />
-                    <h4>Carlos Mendoza</h4>
+                    <h4>Wilson Correa</h4>
                     <div class="role">CEO & Fundador</div>
-                    <div class="bio">Ingeniero civil con 20 años de experiencia en grandes infraestructuras.</div>
+                    <div class="bio">Ingeniero industrial con 6 años de experiencia en grandes industrias.</div>
                 </div>
                 <div class="team-card fade-up">
                     <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=200&h=200&fit=crop&crop=face" alt="CTO" loading="lazy" />
@@ -250,9 +250,8 @@ unset($stat);
                     </form>
                 </div>
                 <div class="contact-info fade-up">
-                    <div class="item"><span class="icon">📍</span> Bogotá, Colombia</div>
-                    <div class="item"><span class="icon">📞</span> +57 300 123 4567</div>
-                    <div class="item"><span class="icon">✉️</span> contacto@geinftec.com</div>
+                    <div class="item"><span class="icon">📍</span> Cordoba, Colombia</div>
+                    <div class="item"><span class="icon">✉️</span> geinftec@outlook.com</div>
                     <div class="item"><span class="icon">🕒</span> Lun – Vie: 8:00 am – 6:00 pm</div>
                     <div class="map-container">
                         <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3976.785140536432!2d-74.08373268519861!3d4.624548343699416!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8e3f9a3f5c1b2e6b%3A0x5f7b6c8a0a2b9c0d!2sBogot%C3%A1!5e0!3m2!1ses!2sco!4v1650000000000!5m2!1ses!2sco" allowfullscreen loading="lazy"></iframe>
