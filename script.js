@@ -93,15 +93,16 @@
     // 2. TÍTULO ROTATIVO (máquina de escribir)
     // ------------------------------------------------------------
     const rotatingEl = document.getElementById('rotating-text');
+    // Obtener frases desde data-phrases (enviado por PHP) o usar defaults
     let phrases = [];
     if (rotatingEl.dataset.phrases) {
         try {
             phrases = JSON.parse(rotatingEl.dataset.phrases);
         } catch(e) {
-            phrases = ["Ingeniería de vanguardia", "Construcción inteligente", "Software que transforma"];
+            phrases = ['Ingeniería de vanguardia', 'Construcción inteligente', 'Software que transforma'];
         }
     } else {
-        phrases = ["Ingeniería de vanguardia", "Construcción inteligente", "Software que transforma"];
+        phrases = ['Ingeniería de vanguardia', 'Construcción inteligente', 'Software que transforma'];
     }
     let phraseIndex = 0;
     let charIndex = 0;
@@ -143,6 +144,7 @@
         hamburger.classList.toggle('active');
         navLinks.classList.toggle('open');
     });
+    // Cerrar al hacer clic en un enlace
     navLinks.querySelectorAll('a').forEach(link => {
         link.addEventListener('click', () => {
             hamburger.classList.remove('active');
@@ -185,6 +187,7 @@
         entries.forEach(entry => {
             if (entry.isIntersecting) {
                 entry.target.classList.add('visible');
+                // Si es un contador, iniciar animación
                 const statNumber = entry.target.querySelector('.stat-number');
                 if (statNumber && !statNumber.dataset.animated) {
                     animateCounter(statNumber);
@@ -213,9 +216,12 @@
         }, 25);
     }
 
+    // También observar las estadísticas directamente
     document.querySelectorAll('.stat-number').forEach(el => {
+        // Ya se maneja con el observer, pero por si acaso
         const parent = el.closest('.stat-card');
         if (parent) {
+            // Forzar re-observación
             observer.observe(parent);
         }
     });
@@ -279,10 +285,13 @@
     // ------------------------------------------------------------
     document.querySelectorAll('img[loading="lazy"]').forEach(img => {
         observer.observe(img);
+        // Ya están usando loading="lazy" nativo, pero añadimos clase
     });
 
     // ------------------------------------------------------------
-    // 11. PARALLAX suave en hero
+    // 11. PARALLAX suave en hero (movimiento sutil del canvas)
+    //     Ya está implementado con el canvas, pero añadimos efecto
+    //     de desplazamiento en el contenido del hero (opcional)
     // ------------------------------------------------------------
     const heroContent = document.querySelector('.hero-content');
     window.addEventListener('scroll', () => {
@@ -291,6 +300,12 @@
             heroContent.style.transform = `translateY(${scrolled * 0.05}px)`;
         }
     });
+
+    // ------------------------------------------------------------
+    // 12. Efecto 3D en tarjetas de servicio (movimiento mouse)
+    //     (Opcional, ya tienen hover 3D con CSS)
+    // ------------------------------------------------------------
+    // No es necesario, el CSS ya maneja el hover 3D
 
     console.log('🚀 GEINFTEC S.A.S. – Sitio web cargado exitosamente.');
 })();

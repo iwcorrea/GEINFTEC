@@ -1,14 +1,12 @@
 <?php
 // config.php - Conexión a PostgreSQL con PDO usando variables de entorno
 
-// Obtener variables de entorno (definidas en Render)
 $host = getenv('DB_HOST') ?: 'localhost';
 $port = getenv('DB_PORT') ?: '5432';
 $dbname = getenv('DB_NAME') ?: 'geinftec_db';
 $user = getenv('DB_USER') ?: 'postgres';
 $password = getenv('DB_PASS') ?: '';
 
-// DSN para PostgreSQL
 $dsn = "pgsql:host=$host;port=$port;dbname=$dbname";
 
 try {

@@ -1,8 +1,8 @@
 FROM php:8.2-apache
 
-# Instalar extensiones para PostgreSQL y MySQL (por si acaso)
+# Instalar extensiones para PostgreSQL
 RUN apt-get update && apt-get install -y libpq-dev && \
-    docker-php-ext-install pdo pdo_pgsql mysqli && \
+    docker-php-ext-install pdo pdo_pgsql && \
     docker-php-ext-enable pdo_pgsql
 
 # Habilitar mod_rewrite
