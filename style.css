@@ -624,28 +624,49 @@
    .footer .socials a:hover {
        color: var(--cyan);
    }
+   
+   /* --- NEWSLETTER MEJORADO --- */
+   .footer .newsletter {
+       display: flex;
+       flex-wrap: wrap;
+       justify-content: center;
+       gap: 0.5rem;
+       max-width: 100%;
+   }
    .footer .newsletter input {
+       flex: 1 1 180px;
        padding: 0.7rem 1rem;
-       border-radius: 50px 0 0 50px;
-       border: none;
+       border: 1px solid rgba(0, 245, 212, 0.3);
+       border-radius: 50px;
        background: var(--bg-primary);
        color: var(--white);
-       width: 70%;
        font-family: var(--font);
+       font-size: 0.95rem;
+       min-width: 140px;
+       transition: border 0.3s;
+   }
+   .footer .newsletter input:focus {
+       outline: none;
+       border-color: var(--cyan);
    }
    .footer .newsletter button {
-       padding: 0.7rem 1.2rem;
-       border-radius: 0 50px 50px 0;
+       padding: 0.7rem 1.8rem;
        border: none;
+       border-radius: 50px;
        background: var(--cyan);
        color: var(--bg-primary);
        font-weight: 600;
+       font-size: 0.95rem;
        cursor: pointer;
-       transition: background var(--transition);
+       transition: background var(--transition), transform 0.2s;
+       white-space: nowrap;
    }
    .footer .newsletter button:hover {
        background: #00d4b8;
+       transform: scale(1.02);
    }
+   /* --- FIN NEWSLETTER --- */
+   
    .footer .copyright {
        text-align: center;
        color: var(--text-muted);
