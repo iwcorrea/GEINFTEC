@@ -2,33 +2,32 @@
 require_once 'funciones.php';
 
 // Obtener datos de la BD con fallbacks a los valores originales
-$hero_titulo = getContent('hero', 'titulo', 'Innovación que construye el futuro');
 $hero_subtitulo = getContent('hero', 'subtitulo', 'Ingeniería, construcción y desarrollo de software con visión de vanguardia. Transformamos ideas en realidades digitales y físicas.');
 $hero_frases = getContent('hero', 'frases', '["Ingeniería de vanguardia","Construcción inteligente","Software que transforma"]');
 $hero_frases_array = json_decode($hero_frases, true) ?: ["Ingeniería de vanguardia","Construcción inteligente","Software que transforma"];
 
-$servicios_titulo = getContent('servicios', 'titulo', 'Nuestros Servicios');
+$servicios_titulo = getContent('servicios', 'titulo', 'Nuestros');
 $servicios_sub = getContent('servicios', 'subtitulo', 'Soluciones integrales que combinan ingeniería de calidad con tecnología de punta.');
 
-$proyectos_titulo = getContent('proyectos', 'titulo', 'Proyectos Destacados');
+$proyectos_titulo = getContent('proyectos', 'titulo', 'Proyectos');
 $proyectos_sub = getContent('proyectos', 'subtitulo', 'Obras y soluciones que reflejan nuestra excelencia y compromiso.');
 
-$tecnologias_titulo = getContent('tecnologias', 'titulo', 'Tecnologías que impulsamos');
+$tecnologias_titulo = getContent('tecnologias', 'titulo', 'Tecnologías');
 $tecnologias_sub = getContent('tecnologias', 'subtitulo', 'Herramientas y plataformas con las que trabajamos día a día.');
 
-$estadisticas_titulo = getContent('estadisticas', 'titulo', 'En números');
+$estadisticas_titulo = getContent('estadisticas', 'titulo', 'En');
 $estadisticas_sub = getContent('estadisticas', 'subtitulo', 'La confianza de nuestros clientes y el impacto de nuestros proyectos.');
 
-$equipo_titulo = getContent('equipo', 'titulo', 'Nuestro Equipo');
+$equipo_titulo = getContent('equipo', 'titulo', 'Nuestro');
 $equipo_sub = getContent('equipo', 'subtitulo', 'Profesionales apasionados por la innovación y la excelencia.');
 
-$contacto_titulo = getContent('contacto', 'titulo', 'Contáctanos ahora');
+$contacto_titulo = getContent('contacto', 'titulo', 'Contáctanos');
 $contacto_sub = getContent('contacto', 'subtitulo', 'Estamos listos para hacer realidad tu próximo proyecto.');
 
 $footer_texto = getContent('footer', 'texto', 'Ingeniería, construcción y tecnología para un futuro sostenible e inteligente.');
 $footer_copyright = getContent('footer', 'copyright', '&copy; 2026 GEINFTEC S.A.S. Todos los derechos reservados. | Diseñado con 💙 en Colombia.');
 
-// Estadísticas (valores desde BD o defaults)
+// Estadísticas
 $stats = [
     ['clave' => 'anos', 'label' => 'Años de experiencia', 'default' => 12],
     ['clave' => 'proyectos', 'label' => 'Proyectos entregados', 'default' => 150],
@@ -85,7 +84,7 @@ unset($stat);
         <canvas id="hero-canvas"></canvas>
         <div class="container hero-content">
             <h1 class="hero-title">
-                <?php echo $hero_titulo; ?><br />
+                Innovación que<br />
                 <span class="highlight">construye el futuro</span>
             </h1>
             <div style="font-size: 2rem; font-weight: 600; margin-bottom: 0.5rem;">
