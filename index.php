@@ -1,7 +1,8 @@
 <?php
 require_once 'funciones.php';
 
-// Obtener datos de la BD con fallbacks a los valores originales
+// Obtener datos de la BD con fallbacks
+$hero_titulo = getContent('hero', 'titulo', 'Innovación que');
 $hero_subtitulo = getContent('hero', 'subtitulo', 'Ingeniería, construcción y desarrollo de software con visión de vanguardia. Transformamos ideas en realidades digitales y físicas.');
 $hero_frases = getContent('hero', 'frases', '["Ingeniería de vanguardia","Construcción inteligente","Software que transforma"]');
 $hero_frases_array = json_decode($hero_frases, true) ?: ["Ingeniería de vanguardia","Construcción inteligente","Software que transforma"];
@@ -52,14 +53,10 @@ unset($stat);
 </head>
 <body>
 
-    <!-- ============================================================
-    PROGRESS BAR
-    ============================================================ -->
+    <!-- Progress Bar -->
     <div id="progress-bar"></div>
 
-    <!-- ============================================================
-    HEADER
-    ============================================================ -->
+    <!-- HEADER -->
     <header class="header" id="header">
         <div class="container">
             <div class="logo">GEINFTEC <span>S.A.S.</span></div>
@@ -77,30 +74,24 @@ unset($stat);
         </div>
     </header>
 
-    <!-- ============================================================
-    HERO
-    ============================================================ -->
+    <!-- HERO -->
     <section class="hero" id="hero">
         <canvas id="hero-canvas"></canvas>
         <div class="container hero-content">
             <h1 class="hero-title">
-                Innovación que<br />
+                <?php echo $hero_titulo; ?><br />
                 <span class="highlight">construye el futuro</span>
             </h1>
             <div style="font-size: 2rem; font-weight: 600; margin-bottom: 0.5rem;">
                 <span id="rotating-text" data-phrases='<?php echo json_encode($hero_frases_array); ?>'></span>
             </div>
-            <p class="hero-sub">
-                <?php echo $hero_subtitulo; ?>
-            </p>
+            <p class="hero-sub"><?php echo $hero_subtitulo; ?></p>
             <a href="#contacto" class="btn">Contáctanos</a>
             <a href="#proyectos" class="btn btn-outline" style="margin-left: 1rem;">Ver proyectos</a>
         </div>
     </section>
 
-    <!-- ============================================================
-    SERVICIOS
-    ============================================================ -->
+    <!-- SERVICIOS -->
     <section id="servicios">
         <div class="container">
             <h2 class="section-title fade-up"><?php echo $servicios_titulo; ?> <span>Servicios</span></h2>
@@ -140,9 +131,7 @@ unset($stat);
         </div>
     </section>
 
-    <!-- ============================================================
-    PROYECTOS
-    ============================================================ -->
+    <!-- PROYECTOS -->
     <section id="proyectos" style="background: rgba(0,0,0,0.2);">
         <div class="container">
             <h2 class="section-title fade-up"><?php echo $proyectos_titulo; ?> <span>Destacados</span></h2>
@@ -176,9 +165,7 @@ unset($stat);
         </div>
     </section>
 
-    <!-- ============================================================
-    TECNOLOGÍAS
-    ============================================================ -->
+    <!-- TECNOLOGÍAS -->
     <section id="tecnologias">
         <div class="container">
             <h2 class="section-title fade-up"><?php echo $tecnologias_titulo; ?> <span>que impulsamos</span></h2>
@@ -196,9 +183,7 @@ unset($stat);
         </div>
     </section>
 
-    <!-- ============================================================
-    ESTADÍSTICAS
-    ============================================================ -->
+    <!-- ESTADÍSTICAS -->
     <section id="estadisticas" style="background: rgba(0,0,0,0.15);">
         <div class="container">
             <h2 class="section-title fade-up"><?php echo $estadisticas_titulo; ?> <span>números</span></h2>
@@ -214,9 +199,7 @@ unset($stat);
         </div>
     </section>
 
-    <!-- ============================================================
-    EQUIPO
-    ============================================================ -->
+    <!-- EQUIPO -->
     <section id="equipo">
         <div class="container">
             <h2 class="section-title fade-up"><?php echo $equipo_titulo; ?> <span>Equipo</span></h2>
@@ -250,9 +233,7 @@ unset($stat);
         </div>
     </section>
 
-    <!-- ============================================================
-    CONTACTO
-    ============================================================ -->
+    <!-- CONTACTO -->
     <section id="contacto" style="background: rgba(0,0,0,0.2);">
         <div class="container">
             <h2 class="section-title fade-up"><?php echo $contacto_titulo; ?> <span>ahora</span></h2>
@@ -281,9 +262,7 @@ unset($stat);
         </div>
     </section>
 
-    <!-- ============================================================
-    FOOTER
-    ============================================================ -->
+    <!-- FOOTER -->
     <footer class="footer">
         <div class="container">
             <div class="footer-grid">
@@ -316,15 +295,11 @@ unset($stat);
                     <div id="newsletterFeedback" style="margin-top:0.5rem; color:var(--cyan); font-size:0.9rem;"></div>
                 </div>
             </div>
-            <div class="copyright">
-                <?php echo $footer_copyright; ?>
-            </div>
+            <div class="copyright"><?php echo $footer_copyright; ?></div>
         </div>
     </footer>
 
-    <!-- ============================================================
-    BOTÓN VOLVER ARRIBA
-    ============================================================ -->
+    <!-- Botón volver arriba -->
     <button id="back-to-top" aria-label="Volver arriba">↑</button>
 
     <script src="script.js"></script>

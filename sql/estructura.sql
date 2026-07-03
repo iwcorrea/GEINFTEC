@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS contenido (
     UNIQUE(seccion, clave)
 );
 
--- Insertar datos por defecto (con los valores originales del diseño)
+-- Insertar datos por defecto (con valores ajustados)
 INSERT INTO contenido (seccion, clave, valor) VALUES
 ('hero', 'titulo', 'Innovación que'),
 ('hero', 'subtitulo', 'Ingeniería, construcción y desarrollo de software con visión de vanguardia. Transformamos ideas en realidades digitales y físicas.'),

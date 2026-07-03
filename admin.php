@@ -1,5 +1,12 @@
 <?php
+session_start();
 require_once 'funciones.php';
+
+// Verificar autenticación
+if (!isset($_SESSION['admin_logged']) || $_SESSION['admin_logged'] !== true) {
+    header('Location: login.php');
+    exit;
+}
 
 $mensaje = '';
 $error = '';
@@ -68,11 +75,13 @@ $contenido = getAllContent();
         .subir-imagen { display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; }
         .subir-imagen input[type="file"] { color: #fff; }
         .volver { display: inline-block; margin-top: 2rem; color: #00f5d4; }
+        .logout { float: right; background: #ff6b6b; padding: 0.5rem 1rem; border-radius: 50px; color: #fff; text-decoration: none; }
+        .logout:hover { background: #e55a5a; }
     </style>
 </head>
 <body>
 <div class="container">
-    <h1>Panel de Administración - GEINFTEC</h1>
+    <h1>Panel de Administración - GEINFTEC <a href="logout.php" class="logout">Cerrar sesión</a></h1>
     <p><a href="index.php" target="_blank" class="volver">← Ver sitio</a></p>
 
     <?php if ($mensaje): ?>
