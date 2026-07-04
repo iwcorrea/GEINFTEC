@@ -90,31 +90,24 @@ function uploadToSupabase($file, $filename = null) {
     if ($file['error'] !== UPLOAD_ERR_OK) {
         return ['error' => 'Error al subir el archivo: ' . $file['error']];
     }
-    
     if ($file['size'] > MAX_FILE_SIZE) {
         return ['error' => 'El archivo excede el tamaño máximo permitido (5 MB).'];
     }
-    
     $finfo = finfo_open(FILEINFO_MIME_TYPE);
     $mimeType = finfo_file($finfo, $file['tmp_name']);
     finfo_close($finfo);
-    
     $allowed = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
     if (!in_array($mimeType, $allowed)) {
-        return ['error' => 'Formato de imagen no permitido. Usa JPG, PNG, GIF o WEBP.'];
+        return ['error' => 'Formato de imagen no permitido.'];
     }
-    
     $ext = pathinfo($file['name'], PATHINFO_EXTENSION);
     $filename = $filename ?: uniqid() . '.' . $ext;
     $filename = preg_replace('/[^a-zA-Z0-9_.-]/', '_', $filename);
-    
     $fileContent = file_get_contents($file['tmp_name']);
     if ($fileContent === false) {
         return ['error' => 'No se pudo leer el archivo.'];
     }
-    
     $url = SUPABASE_URL . '/storage/v1/object/' . SUPABASE_BUCKET . '/' . $filename;
-    
     $ch = curl_init($url);
     curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'POST');
     curl_setopt($ch, CURLOPT_POSTFIELDS, $fileContent);
@@ -125,11 +118,9 @@ function uploadToSupabase($file, $filename = null) {
         'Authorization: Bearer ' . SUPABASE_ANON_KEY,
         'x-upsert: true'
     ]);
-    
     $response = curl_exec($ch);
     $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
     curl_close($ch);
-    
     if ($httpCode === 200 || $httpCode === 201) {
         return ['success' => SUPABASE_STORAGE_URL . $filename];
     } else {
@@ -148,7 +139,6 @@ function listImagesFromBucket() {
     $response = curl_exec($ch);
     $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
     curl_close($ch);
-    
     if ($httpCode === 200) {
         $files = json_decode($response, true);
         if (is_array($files)) {

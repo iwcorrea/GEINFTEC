@@ -1,10 +1,6 @@
 <?php
 require_once 'funciones.php';
 
-// ============================================================
-// OBTENER TODOS LOS DATOS DE LA BD
-// ============================================================
-
 // --- Hero ---
 $hero_titulo = getContent('hero', 'titulo', 'Innovación que');
 $hero_subtitulo = getContent('hero', 'subtitulo', 'Ingeniería, construcción y desarrollo de software con visión de vanguardia. Transformamos ideas en realidades digitales y físicas.');
@@ -35,7 +31,7 @@ for ($i = 1; $i <= 3; $i++) {
     ];
 }
 
-// --- Tecnologías (con iconos individuales) ---
+// --- Tecnologías ---
 $tecnologias_titulo = getContent('tecnologias', 'titulo', 'Tecnologías');
 $tecnologias_sub = getContent('tecnologias', 'subtitulo', 'Herramientas y plataformas con las que trabajamos día a día.');
 $tecnologias_raw = getContent('tecnologias', 'lista', '[{"icon":"⚛️","name":"React"},{"icon":"🟢","name":"Node.js"},{"icon":"🐍","name":"Python"},{"icon":"☁️","name":"AWS"},{"icon":"🐳","name":"Docker"},{"icon":"🗄️","name":"PostgreSQL"},{"icon":"📱","name":"Flutter"},{"icon":"🔷","name":"TypeScript"}]');
