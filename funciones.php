@@ -150,22 +150,27 @@ function uploadToSupabase($file, $filename = null) {
     }
 }
 
-// --- Listar imágenes del bucket (CORREGIDO) ---
+// --- Listar imágenes del bucket (CORREGIDO DEFINITIVO) ---
 function listImagesFromBucket() {
-    $url = SUPABASE_URL . '/storage/v1/object/list/' . SUPABASE_BUCKET . '/';
+    // Construir la URL correcta para listar
+    $url = SUPABASE_URL . '/storage/v1/object/list/' . SUPABASE_BUCKET;
+    // Sin barra al final
     
     $ch = curl_init($url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_HTTPHEADER, [
         'apikey: ' . SUPABASE_ANON_KEY,
-        'Authorization: Bearer ' . SUPABASE_ANON_KEY
+        'Authorization: Bearer ' . SUPABASE_ANON_KEY,
+        'Content-Type: application/json'
     ]);
     $response = curl_exec($ch);
     $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $curlError = curl_error($ch);
     curl_close($ch);
     
     // Depuración: registrar en logs de Render
     error_log("Supabase list URL: " . $url);
+    error_log("Supabase list HTTP code: " . $httpCode);
     error_log("Supabase list response: " . substr($response, 0, 500));
     
     if ($httpCode === 200) {
@@ -173,7 +178,6 @@ function listImagesFromBucket() {
         if (is_array($files) && count($files) > 0) {
             $images = [];
             foreach ($files as $file) {
-                // A veces la respuesta es un array de objetos con 'name'
                 if (isset($file['name'])) {
                     $images[] = [
                         'name' => $file['name'],
@@ -182,8 +186,14 @@ function listImagesFromBucket() {
                 }
             }
             return $images;
+        } else {
+            return [];
         }
+    } else {
+        // Si hay error, devolver array vacío y registrar
+        $errorMsg = "Error al listar imágenes: HTTP $httpCode - " . substr($response, 0, 200);
+        error_log("Supabase list error: " . $errorMsg);
+        return [];
     }
-    return [];
 }
 ?>

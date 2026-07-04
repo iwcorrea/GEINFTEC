@@ -22,7 +22,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     // Acción para obtener lista de imágenes (AJAX)
     if ($_POST['action'] === 'get_images') {
         $imagenes = listImagesFromBucket();
-        echo json_encode(['success' => true, 'images' => $imagenes]);
+        // Verificar si hubo error en el listado (si el bucket no existe, devuelve array vacío)
+        if (empty($imagenes)) {
+            // Intentar obtener el último error de los logs (no podemos aquí)
+            // En su lugar, devolvemos un array vacío con mensaje
+            echo json_encode(['success' => true, 'images' => [], 'message' => 'No hay imágenes o el bucket no es accesible.']);
+        } else {
+            echo json_encode(['success' => true, 'images' => $imagenes]);
+        }
         exit;
     }
     
@@ -155,6 +162,7 @@ $primeraSeccion = $secciones[0] ?? 'hero';
         .modal-item .name { font-size: 0.7rem; color: #b0b8d1; margin-top: 0.3rem; word-break: break-all; }
         .modal-close { float: right; background: none; border: none; color: #fff; font-size: 1.5rem; cursor: pointer; }
         .modal-loading { text-align: center; padding: 2rem; color: #b0b8d1; }
+        .modal-error { color: #ff6b6b; text-align: center; padding: 2rem; }
         .mensaje { padding: 0.8rem 1.2rem; border-radius: 8px; margin-bottom: 1rem; font-weight: 600; }
         .mensaje.success { background: rgba(0,245,212,0.15); color: #00f5d4; border: 1px solid #00f5d4; }
         .mensaje.error { background: rgba(255,107,107,0.15); color: #ff6b6b; border: 1px solid #ff6b6b; }
@@ -437,18 +445,25 @@ $primeraSeccion = $secciones[0] ?? 'hero';
                 });
                 grid.innerHTML = html;
             } else {
+                // Si no hay imágenes o hubo error
+                let mensaje = data.message || 'No hay imágenes subidas aún.';
                 grid.innerHTML = `
                     <p style="color:#b0b8d1; grid-column: 1/-1; text-align:center; padding:2rem;">
-                        No hay imágenes subidas aún. 
-                        <br>Sube una imagen usando el botón "Subir nueva" en cualquier campo de imagen.
+                        ${mensaje}
                         <br><br>
-                        <span style="font-size:0.8rem; color:#666;">Si ya subiste imágenes y no aparecen, verifica que el bucket de Supabase esté configurado correctamente.</span>
+                        <span style="font-size:0.8rem; color:#666;">
+                            Sube una imagen usando "Subir nueva" o verifica que el bucket de Supabase esté configurado correctamente.
+                        </span>
+                        <br><br>
+                        <span style="font-size:0.8rem; color:#ff6b6b;">
+                            Si el problema persiste, revisa los logs de Render.
+                        </span>
                     </p>
                 `;
             }
         })
         .catch(error => {
-            grid.innerHTML = `<p style="color:#ff6b6b; text-align:center; padding:2rem;">Error al cargar imágenes: ${error.message}</p>`;
+            grid.innerHTML = `<p class="modal-error">Error al cargar imágenes: ${error.message}</p>`;
             console.error('Error:', error);
         });
     }
