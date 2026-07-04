@@ -58,7 +58,10 @@ $contenido = getAllContent();
 $imagenes = listImagesFromBucket();
 $csrf_token = generateCSRFToken();
 
-// Ocultar claves duplicadas en secciones 'equipo' y 'proyectos'
+// ============================================================
+// MEJORA: Unificación de claves de imágenes en proyectos y equipo
+// ============================================================
+// Ocultar claves duplicadas (img1, img2, etc.) en secciones 'equipo' y 'proyectos'
 $duplicados_equipo = ['img1', 'img2', 'img3', 'img4', 'miembro1_imagen', 'miembro2_imagen', 'miembro3_imagen', 'miembro4_imagen'];
 $duplicados_proyectos = ['img1', 'img2', 'img3'];
 
@@ -73,6 +76,27 @@ if (isset($contenido['proyectos'])) {
         return !in_array($clave, $duplicados_proyectos);
     }, ARRAY_FILTER_USE_KEY);
 }
+
+// ============================================================
+// MEJORA: Ordenar campos para que las imágenes aparezcan primero
+// ============================================================
+function ordenarCampos($campos) {
+    $imagenes = [];
+    $otros = [];
+    foreach ($campos as $clave => $valor) {
+        if (strpos($clave, 'img') !== false || strpos($clave, 'imagen') !== false || strpos($clave, 'foto') !== false) {
+            $imagenes[$clave] = $valor;
+        } else {
+            $otros[$clave] = $valor;
+        }
+    }
+    return array_merge($imagenes, $otros);
+}
+
+foreach ($contenido as $seccion => &$campos) {
+    $campos = ordenarCampos($campos);
+}
+unset($campos);
 
 $secciones = array_keys($contenido);
 $primeraSeccion = $secciones[0] ?? 'hero';
@@ -98,6 +122,7 @@ $primeraSeccion = $secciones[0] ?? 'hero';
         .btn-danger:hover { background: #e55a5a; }
         .btn-outline { background: transparent; border: 2px solid #00f5d4; color: #00f5d4; }
         .btn-outline:hover { background: #00f5d4; color: #0b132b; }
+        .btn-sm { padding: 0.3rem 0.8rem; font-size: 0.8rem; }
         .tabs { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 2rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 0.5rem; }
         .tab { padding: 0.5rem 1.2rem; border-radius: 50px; cursor: pointer; background: #1c2541; color: #b0b8d1; transition: all 0.3s; font-weight: 600; }
         .tab.active { background: #00f5d4; color: #0b132b; }
@@ -132,6 +157,9 @@ $primeraSeccion = $secciones[0] ?? 'hero';
         .mensaje.error { background: rgba(255,107,107,0.15); color: #ff6b6b; border: 1px solid #ff6b6b; }
         .mensaje { display: none; }
         .mensaje.show { display: block; }
+        .help-text { color: #b0b8d1; font-size: 0.8rem; margin-top: 0.3rem; }
+        .btn-refresh { background: transparent; color: #00f5d4; border: 1px solid #00f5d4; padding: 0.2rem 0.8rem; border-radius: 50px; cursor: pointer; font-size: 0.8rem; }
+        .btn-refresh:hover { background: #00f5d4; color: #0b132b; }
         @media (max-width: 768px) {
             .campo label { min-width: 100%; }
             .header-admin { flex-direction: column; align-items: stretch; }
@@ -175,12 +203,23 @@ $primeraSeccion = $secciones[0] ?? 'hero';
                 </h2>
                 <?php foreach ($contenido[$seccion] as $clave => $valor): ?>
                     <div class="campo" data-seccion="<?php echo $seccion; ?>" data-clave="<?php echo $clave; ?>">
-                        <label for="<?php echo $seccion.'_'.$clave; ?>"><?php echo htmlspecialchars($clave); ?></label>
+                        <label for="<?php echo $seccion.'_'.$clave; ?>">
+                            <?php 
+                            // Mejora: etiquetas más descriptivas
+                            $label = $clave;
+                            if (strpos($clave, 'img') !== false || strpos($clave, 'imagen') !== false || strpos($clave, 'foto') !== false) {
+                                $label = '🖼️ ' . $clave;
+                            }
+                            echo htmlspecialchars($label); 
+                            ?>
+                        </label>
                         <div class="valor">
                             <?php if (strpos($clave, 'imagen') !== false || strpos($clave, 'img') !== false || strpos($clave, 'foto') !== false): ?>
                                 <div class="img-container">
                                     <?php if ($valor && filter_var($valor, FILTER_VALIDATE_URL)): ?>
                                         <img src="<?php echo htmlspecialchars($valor); ?>" alt="preview" class="preview-img">
+                                    <?php else: ?>
+                                        <div style="color:#666; font-size:0.8rem;">Sin imagen</div>
                                     <?php endif; ?>
                                     <div>
                                         <form class="ajax-form" enctype="multipart/form-data" method="post" action="">
@@ -189,9 +228,9 @@ $primeraSeccion = $secciones[0] ?? 'hero';
                                             <input type="hidden" name="clave" value="<?php echo htmlspecialchars($clave); ?>">
                                             <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrf_token); ?>">
                                             <input type="file" name="imagen" accept="image/*" required style="margin-bottom:0.5rem; display:block;">
-                                            <button type="submit" class="btn">Subir nueva</button>
+                                            <button type="submit" class="btn btn-sm">Subir nueva</button>
                                         </form>
-                                        <button type="button" class="btn btn-outline" onclick="openImageSelector('<?php echo $seccion; ?>', '<?php echo $clave; ?>')">Elegir existente</button>
+                                        <button type="button" class="btn btn-outline btn-sm" onclick="openImageSelector('<?php echo $seccion; ?>', '<?php echo $clave; ?>')">Elegir existente</button>
                                     </div>
                                 </div>
                                 <form class="ajax-form" method="post" style="margin-top:0.5rem;">
@@ -200,7 +239,7 @@ $primeraSeccion = $secciones[0] ?? 'hero';
                                     <input type="hidden" name="clave" value="<?php echo htmlspecialchars($clave); ?>">
                                     <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrf_token); ?>">
                                     <input type="text" name="valor" value="<?php echo htmlspecialchars($valor); ?>" placeholder="URL de imagen" style="width:100%;">
-                                    <button type="submit" class="btn" style="margin-top:0.3rem;">Actualizar URL</button>
+                                    <button type="submit" class="btn btn-sm" style="margin-top:0.3rem;">Actualizar URL</button>
                                 </form>
                             <?php else: ?>
                                 <form class="ajax-form" method="post">
@@ -213,13 +252,23 @@ $primeraSeccion = $secciones[0] ?? 'hero';
                                     <?php else: ?>
                                         <input type="text" name="valor" value="<?php echo htmlspecialchars($valor); ?>">
                                     <?php endif; ?>
-                                    <button type="submit" class="btn" style="margin-top:0.3rem;">Actualizar</button>
+                                    <button type="submit" class="btn btn-sm" style="margin-top:0.3rem;">Actualizar</button>
                                 </form>
                             <?php endif; ?>
                             <div class="status"></div>
+                            <?php if ($valor && !empty($valor) && strlen($valor) < 100): ?>
+                                <div class="help-text">Valor: <?php echo htmlspecialchars(substr($valor, 0, 80)); ?></div>
+                            <?php endif; ?>
                         </div>
                     </div>
                 <?php endforeach; ?>
+                <!-- Mejora: Mensaje de ayuda para imágenes -->
+                <div style="margin-top:1rem; padding:0.8rem; background:rgba(0,245,212,0.05); border-radius:8px; border-left:3px solid #00f5d4;">
+                    <p style="color:#b0b8d1; font-size:0.85rem;">
+                        💡 <strong>Consejo:</strong> Para imágenes, usa el botón "Elegir existente" para reutilizar imágenes ya subidas.
+                        También puedes pegar la URL de cualquier imagen de internet.
+                    </p>
+                </div>
             </div>
         </div>
     <?php endforeach; ?>
@@ -229,11 +278,19 @@ $primeraSeccion = $secciones[0] ?? 'hero';
 <div class="modal" id="imageModal">
     <div class="modal-content">
         <button class="modal-close" onclick="closeImageSelector()">&times;</button>
-        <h3>Seleccionar imagen existente</h3>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+            <h3>Seleccionar imagen existente</h3>
+            <button class="btn btn-sm btn-refresh" onclick="refreshImages()">🔄 Refrescar</button>
+        </div>
         <p style="color:#b0b8d1; margin-bottom:1rem;">Haz clic en una imagen para usarla en este campo.</p>
         <div class="modal-grid" id="imageGrid">
             <?php if (empty($imagenes)): ?>
-                <p style="color:#b0b8d1;">No hay imágenes subidas aún.</p>
+                <p style="color:#b0b8d1; grid-column: 1/-1; text-align:center; padding:2rem;">
+                    No hay imágenes subidas aún. 
+                    <br>Sube una imagen usando el botón "Subir nueva" en cualquier campo de imagen.
+                    <br><br>
+                    <span style="font-size:0.8rem; color:#666;">Si ya subiste imágenes y no aparecen, verifica que el bucket de Supabase esté configurado correctamente.</span>
+                </p>
             <?php else: ?>
                 <?php foreach ($imagenes as $img): ?>
                     <div class="modal-item" onclick="selectImage('<?php echo htmlspecialchars($img['url']); ?>')">
@@ -370,7 +427,7 @@ $primeraSeccion = $secciones[0] ?? 'hero';
         const campos = document.querySelectorAll('.campo');
         for (let campo of campos) {
             const label = campo.querySelector('label');
-            if (label && label.textContent.trim() === currentClave) {
+            if (label && label.textContent.trim().replace('🖼️ ', '') === currentClave) {
                 const input = campo.querySelector('input[name="valor"]');
                 if (input) {
                     input.value = url;
@@ -383,6 +440,11 @@ $primeraSeccion = $secciones[0] ?? 'hero';
                 break;
             }
         }
+    }
+
+    function refreshImages() {
+        // Recargar la página para actualizar la lista de imágenes
+        window.location.reload();
     }
 
     document.getElementById('imageModal').addEventListener('click', function(e) {
