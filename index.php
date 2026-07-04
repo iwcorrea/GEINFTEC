@@ -1,17 +1,10 @@
 <?php
 // ============================================================
-// CONFIGURACIÓN DE SEGURIDAD Y ERRORES
+// CONFIGURACIÓN DE ERRORES (MOSTRAR EN PANTALLA PARA DEPURAR)
 // ============================================================
-// Activar reporte de errores para depuración (desactivar en producción)
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
-
-// Cabeceras de seguridad (CSP ajustada para permitir eval y setTimeout con string)
-header("Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https:; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data: https:; connect-src 'self' https:;");
-header("X-Frame-Options: DENY");
-header("X-Content-Type-Options: nosniff");
-header("Referrer-Policy: strict-origin-when-cross-origin");
 
 // ============================================================
 // INCLUIR FUNCIONES Y OBTENER DATOS
@@ -169,6 +162,8 @@ try {
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>GEINFTEC S.A.S. – Ingeniería, Construcción y Desarrollo de Software</title>
+    <!-- CSP en meta tag (sin unsafe-eval) -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https:; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data: https:; connect-src 'self' https:;">
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
