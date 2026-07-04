@@ -17,7 +17,6 @@ if (!$conn) {
 pg_query($conn, "SET search_path TO public;");
 
 // --- Configuración de Supabase Storage ---
-// Asegúrate de que SUPABASE_URL no tenga barra al final
 define('SUPABASE_URL', rtrim(getenv('SUPABASE_URL') ?: 'https://olcfippgkuhjvssnlxvn.supabase.co', '/'));
 define('SUPABASE_ANON_KEY', getenv('SUPABASE_ANON_KEY') ?: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9sY2ZpcHBna3VoanZzc25seHZuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMwNjQ4NzksImV4cCI6MjA5ODY0MDg3OX0.XtsI8ixVoGFPOiBiYhfZGrx_na6BhmGgAzgpyKYbaSk');
 define('SUPABASE_BUCKET', 'geinftec');
