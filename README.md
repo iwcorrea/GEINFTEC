@@ -1,151 +1,166 @@
 # GEINFTEC S.A.S. - Sitio web institucional
 
-Sitio web moderno de una sola página para GEINFTEC S.A.S., empresa colombiana de ingeniería, construcción y desarrollo de software. Diseño "Deep Tech & Cyber" con animaciones, efectos visuales, panel de administración y conexión a base de datos en la nube (Supabase).
+Sitio web moderno de una sola página para **GEINFTEC S.A.S.**, empresa colombiana de ingeniería, construcción y desarrollo de software. Diseño "Deep Tech & Cyber" con animaciones, efectos visuales y un panel de administración completo para gestionar el contenido dinámicamente.
 
-## 🚀 Características
+---
 
-- **Diseño premium**: Paleta de colores oscuros con acentos cian y violeta, tipografía Inter, efectos 3D, parallax, malla digital en el hero.
+## 🚀 Características principales
+
+- **Diseño premium**: Paleta de colores oscuros con acentos cian y violeta, tipografía **Inter**, efectos 3D, parallax, malla digital en el hero.
 - **Totalmente responsive**: Mobile-first, adaptable a todos los dispositivos.
-- **Contenido dinámico**: Todos los textos, títulos, estadísticas e imágenes se almacenan en una base de datos PostgreSQL (Supabase) y se pueden editar desde el panel de administración.
-- **Panel de administración seguro**: Protegido con inicio de sesión (contraseña configurable mediante variable de entorno).
-- **Subida de imágenes**: Desde el panel puedes subir imágenes para proyectos, equipo y cualquier otra sección.
+- **Contenido dinámico**: Todos los textos, títulos, estadísticas e imágenes se almacenan en **Supabase** (PostgreSQL + Storage).
+- **Panel de administración seguro**: Protegido con login, CSRF, rate limiting y sesiones seguras.
+- **Gestión de imágenes**: Subida de imágenes a **Supabase Storage** con persistencia y URLs públicas.
 - **Efectos visuales**: Contador animado, máquina de escribir en el hero, apariciones con Intersection Observer, barra de progreso de lectura, botón "volver arriba".
+- **Seguridad avanzada**: CSRF, rate limiting, cabeceras de seguridad, validación de archivos, sesiones con expiración.
+
+---
 
 ## 🛠️ Tecnologías utilizadas
 
-- **Frontend**: HTML5, CSS3, JavaScript (vanilla), Canvas para la malla digital.
-- **Backend**: PHP 8.2 con extensión `pgsql` (pg_connect).
-- **Base de datos**: PostgreSQL (Supabase).
-- **Servidor web**: Apache (contenedor Docker en Render).
-- **Control de versiones**: Git + GitHub.
+| Área | Tecnología |
+|------|------------|
+| **Frontend** | HTML5, CSS3, JavaScript (vanilla), Canvas |
+| **Backend** | PHP 8.2 |
+| **Base de datos** | PostgreSQL (Supabase) |
+| **Almacenamiento** | Supabase Storage |
+| **Servidor web** | Apache (contenedor Docker) |
+| **Hosting** | Render.com |
+| **Seguridad** | CSRF, rate limiting, cabeceras HTTP |
 
-## 📦 Estructura de archivos
-geinftec/
-├── index.php # Página principal (todas las secciones)
-├── admin.php # Panel de administración (protegido)
-├── login.php # Formulario de inicio de sesión
+---
+
+## 📦 Estructura del proyecto
+/
+├── index.php # Página principal (pública)
+├── admin.php # Panel de administración
+├── login.php # Página de inicio de sesión
 ├── logout.php # Cierre de sesión
-├── config.php # Conexión a la base de datos (Supabase)
-├── funciones.php # Funciones para consultar y actualizar contenido
-├── style.css # Todos los estilos y efectos visuales
-├── script.js # Animaciones, canvas, contadores, etc.
-├── Dockerfile # Configuración para contenedor Apache + PHP
-├── .htaccess # Configuración de Apache (DirectoryIndex)
-├── uploads/ # Carpeta donde se guardan las imágenes subidas
+├── config.php # Configuración (BD, Storage, seguridad)
+├── funciones.php # Funciones auxiliares (CRUD, seguridad, subida)
+├── style.css # Estilos completos del sitio
+├── script.js # JavaScript (animaciones, efectos, formularios)
+├── Dockerfile # Configuración para contenedor en Render
+├── .htaccess # Configuración de Apache
 └── README.md # Este archivo
 
 text
 
+---
+
 ## 🗄️ Base de datos (Supabase)
 
-La base de datos tiene una única tabla llamada `contenido` que almacena todo el contenido editable:
+### Tabla: `contenido`
+Almacena todo el contenido editable del sitio.
 
 | Campo   | Tipo         | Descripción |
 |---------|--------------|-------------|
 | id      | SERIAL (PK)  | Identificador único |
-| seccion | VARCHAR(50)  | Agrupa los datos por sección (ej. 'hero', 'servicios', 'estadisticas') |
-| clave   | VARCHAR(50)  | Nombre del campo (ej. 'titulo', 'subtitulo', 'frases', 'anos') |
-| valor   | TEXT         | El contenido en sí (texto, número o ruta de imagen) |
+| seccion | VARCHAR(50)  | Agrupa los datos por sección (ej. 'hero', 'servicios') |
+| clave   | VARCHAR(50)  | Nombre del campo (ej. 'titulo', 'subtitulo', 'frases') |
+| valor   | TEXT         | El contenido en sí (texto, número o URL de imagen) |
 
-### Funciones principales de la BD
+### Tabla: `login_attempts`
+Controla los intentos de inicio de sesión para rate limiting.
 
-- **Edición de textos**: Cambia cualquier título, subtítulo, frase o párrafo desde el panel de administración.
-- **Actualización de estadísticas**: Modifica los números de años, proyectos, clientes y satisfacción.
-- **Subida de imágenes**: Asocia imágenes a claves que contengan "img" (por ejemplo, `proyectos_img1`, `equipo_img2`). Las imágenes se guardan en la carpeta `uploads/` y la ruta se almacena en la BD.
+| Campo       | Tipo         | Descripción |
+|-------------|--------------|-------------|
+| ip          | VARCHAR(45)  | Dirección IP del usuario |
+| attempts    | INTEGER      | Número de intentos fallidos |
+| last_attempt| TIMESTAMP    | Fecha y hora del último intento |
 
-## 🔐 Panel de administración
+---
 
-### Acceso
-- URL: `/login.php`
-- Contraseña por defecto: `admin123` (se recomienda cambiarla mediante variable de entorno).
+## 🔐 Seguridad implementada
 
-### Capacidades del administrador
-- **Editar cualquier texto** del sitio (títulos, subtítulos, frases, copyright, etc.).
-- **Subir imágenes** para proyectos, equipo y otras secciones.
-- **Actualizar estadísticas** (años, proyectos, clientes, satisfacción).
-- **Ver previsualización** de imágenes ya subidas.
-- **Cambios instantáneos**: Los cambios se reflejan al instante en la página pública.
+| Medida | Descripción |
+|--------|-------------|
+| **CSRF** | Tokens en todos los formularios POST del panel de administración. |
+| **Rate limiting** | 5 intentos fallidos de login = bloqueo de 15 minutos por IP. |
+| **Sesiones seguras** | Cookies con `HttpOnly`, `Secure`, `SameSite=Strict`, expiración automática. |
+| **Validación de archivos** | Tipo MIME real, tamaño máximo (5 MB), sanitización de nombres. |
+| **Cabeceras HTTP** | `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, `Referrer-Policy`, `Content-Security-Policy`. |
+| **Contraseña admin** | Almacenada en variable de entorno (`ADMIN_PASSWORD`), no en código. |
+| **Regeneración de sesión** | Después de login exitoso. |
 
-### Cómo cambiar la contraseña del admin
-1. Opción recomendada: definir una variable de entorno `ADMIN_PASSWORD` en Render con el valor deseado.
-2. Alternativa: editar el archivo `login.php` y reemplazar la línea `$admin_pass = getenv('ADMIN_PASSWORD') ?: 'admin123';` por `$admin_pass = 'tu_nueva_contraseña';`.
+---
 
-## 📦 Instalación y configuración
+## ⚙️ Configuración y variables de entorno
+
+Define estas variables en tu plataforma de hosting (Render, por ejemplo):
+
+| Variable | Descripción |
+|----------|-------------|
+| `SUPABASE_URI` | Cadena de conexión completa a PostgreSQL (ej. `postgresql://...`) |
+| `SUPABASE_URL` | URL de tu proyecto Supabase (ej. `https://xxxxx.supabase.co`) |
+| `SUPABASE_ANON_KEY` | Clave anónima pública de Supabase |
+| `ADMIN_PASSWORD` | Contraseña para acceder al panel de administración |
+
+---
+
+## 🚀 Despliegue en Render
 
 ### Requisitos previos
-- PHP 8.2 o superior con extensión `pgsql` habilitada.
-- Servidor web (Apache, Nginx o Docker).
-- Cuenta en Supabase (gratuita) con una base de datos PostgreSQL creada.
+- Cuenta en [Render.com](https://render.com)
+- Repositorio en GitHub con el código del proyecto
+- Cuenta en [Supabase](https://supabase.com) con base de datos y bucket de Storage creados
 
-### Pasos para instalar localmente
+### Pasos
 
-1. **Clona el repositorio**:
-   ```bash
-   git clone https://github.com/tu-usuario/geinftec.git
-   cd geinftec
-Crea la base de datos en Supabase:
+1. **Crear la base de datos en Supabase**
+   - Crea un proyecto en Supabase.
+   - Ejecuta el SQL para crear las tablas `contenido` y `login_attempts` (puedes usar el SQL Editor).
 
-Ve a Supabase y crea un nuevo proyecto.
+2. **Crear el bucket de Storage**
+   - En Supabase, ve a **Storage** y crea un bucket público (ej. `geinftec`).
+   - Configura las políticas para permitir `INSERT` y `UPDATE` (opcionalmente elimina `SELECT` para mayor privacidad).
 
-En el Editor SQL, ejecuta el script sql/estructura.sql (incluido en el repositorio) para crear la tabla e insertar los datos por defecto.
+3. **Configurar el Web Service en Render**
+   - Conecta tu repositorio de GitHub.
+   - Selecciona **Docker** como entorno.
+   - Define las variables de entorno (las 4 mencionadas arriba).
+   - El `Dockerfile` incluido instalará las extensiones necesarias y configurará Apache.
 
-Obtén la URI de conexión de Supabase:
+4. **Desplegar**
+   - Haz clic en **"Deploy"**.
+   - Render construirá el contenedor y publicará el sitio.
 
-En tu proyecto de Supabase, ve a Connect > Session pooler > URI.
+### Comandos útiles para desarrollo local
 
-Copia la cadena completa (ej. postgresql://postgres.[ref]:[password]@aws-0-[region].pooler.supabase.com:5432/postgres).
+```bash
+# Clonar el repositorio
+git clone https://github.com/tu-usuario/geinftec.git
+cd geinftec
 
-Configura la conexión en config.php:
-
-Abre config.php y reemplaza la URI por la tuya (o usa variables de entorno).
-
-Si usas variables de entorno, define SUPABASE_URI en tu servidor.
-
-Asegura permisos en la carpeta uploads/:
-
-bash
-mkdir uploads
-chmod 755 uploads
-Inicia el servidor:
-
-bash
+# Ejecutar con el servidor integrado de PHP (para pruebas)
 php -S localhost:8000
-O con Docker (ver más abajo).
 
-Despliegue en Render (recomendado)
-Conecta tu repositorio de GitHub a Render.
-
-Crea un Web Service y selecciona el entorno Docker.
-
-Define las variables de entorno necesarias (mínimo SUPABASE_URI y opcionalmente ADMIN_PASSWORD).
-
-Render construirá automáticamente el contenedor usando el Dockerfile y desplegará el sitio.
-
-Variables de entorno en Render
-Variable	Obligatoria	Descripción
-SUPABASE_URI	Sí	Cadena de conexión completa a Supabase.
-ADMIN_PASSWORD	No	Contraseña para el panel de administración (por defecto admin123).
-Nota: Puedes eliminar variables antiguas como DB_HOST, DB_USER, DB_PASS, DB_NAME si ya no las usas.
-
-🐳 Uso con Docker
-Si prefieres usar Docker localmente, asegúrate de tener instalado Docker y ejecuta:
-
-bash
-# Construir la imagen
+# O con Docker (requiere construir la imagen)
 docker build -t geinftec .
+docker run -p 80:80 -e SUPABASE_URI=... -e SUPABASE_URL=... -e SUPABASE_ANON_KEY=... -e ADMIN_PASSWORD=... geinftec
+🖥️ Uso del panel de administración
+Accede a https://tudominio.com/login.php
 
-# Ejecutar el contenedor (mapeando el puerto 80)
-docker run -p 80:80 -e SUPABASE_URI="postgresql://..." -e ADMIN_PASSWORD="tuclave" geinftec
-Luego accede a http://localhost.
+Introduce la contraseña definida en ADMIN_PASSWORD (por defecto: admin123 si no está definida).
+
+Una vez dentro, podrás:
+
+Editar cualquier texto, título o estadística del sitio.
+
+Subir imágenes (se guardan en Supabase Storage y se almacena la URL en la BD).
+
+Ver previsualización de las imágenes ya subidas.
+
+Actualizar cualquier campo con un solo clic.
 
 📝 Notas adicionales
-Los estilos y scripts están separados en style.css y script.js para facilitar el mantenimiento.
+Las imágenes subidas al panel se almacenan en Supabase Storage, lo que garantiza persistencia incluso al reiniciar el contenedor de Render.
 
-El sitio está optimizado para rendimiento: lazy loading de imágenes, efectos con Intersection Observer, y carga asíncrona de recursos.
+El sitio es completamente responsive y se adapta a móviles, tablets y escritorio.
 
-La malla digital del hero se genera con Canvas y se actualiza en tiempo real.
+Todos los textos del sitio son editables desde el panel de administración sin necesidad de tocar código.
 
-El formulario de newsletter y el de contacto tienen validación frontend (puedes extender para enviar correos).
+La página de login incluye un enlace para volver al sitio público.
 
 🤝 Contribuciones
 Si deseas contribuir, por favor haz un fork del repositorio y envía un pull request con tus mejoras.
