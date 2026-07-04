@@ -22,10 +22,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     // Acción para obtener lista de imágenes (AJAX)
     if ($_POST['action'] === 'get_images') {
         $imagenes = listImagesFromBucket();
-        // Verificar si hubo error en el listado (si el bucket no existe, devuelve array vacío)
         if (empty($imagenes)) {
-            // Intentar obtener el último error de los logs (no podemos aquí)
-            // En su lugar, devolvemos un array vacío con mensaje
             echo json_encode(['success' => true, 'images' => [], 'message' => 'No hay imágenes o el bucket no es accesible.']);
         } else {
             echo json_encode(['success' => true, 'images' => $imagenes]);
@@ -169,8 +166,9 @@ $primeraSeccion = $secciones[0] ?? 'hero';
         .mensaje { display: none; }
         .mensaje.show { display: block; }
         .help-text { color: #b0b8d1; font-size: 0.8rem; margin-top: 0.3rem; }
-        .btn-refresh { background: transparent; color: #00f5d4; border: 1px solid #00f5d4; padding: 0.2rem 0.8rem; border-radius: 50px; cursor: pointer; font-size: 0.8rem; }
+        .btn-refresh { background: transparent; color: #00f5d4; border: 1px solid #00f5d4; padding: 0.2rem 0.8rem; border-radius: 50px; cursor: pointer; font-size: 0.8rem; transition: all 0.3s; }
         .btn-refresh:hover { background: #00f5d4; color: #0b132b; }
+        .btn-refresh:disabled { opacity: 0.5; cursor: not-allowed; }
         @media (max-width: 768px) {
             .campo label { min-width: 100%; }
             .header-admin { flex-direction: column; align-items: stretch; }
@@ -289,12 +287,13 @@ $primeraSeccion = $secciones[0] ?? 'hero';
         <button class="modal-close" onclick="closeImageSelector()">&times;</button>
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
             <h3>Seleccionar imagen existente</h3>
-            <button class="btn btn-sm btn-refresh" onclick="refreshImages()">🔄 Refrescar</button>
+            <button class="btn btn-sm btn-refresh" id="btnRefreshImages" onclick="refreshImages()">🔄 Refrescar</button>
         </div>
         <p style="color:#b0b8d1; margin-bottom:1rem;">Haz clic en una imagen para usarla en este campo.</p>
         <div class="modal-grid" id="imageGrid">
             <div class="modal-loading">Cargando imágenes...</div>
         </div>
+        <div id="modalFeedback" style="margin-top:0.5rem; text-align:center; font-size:0.9rem; color:#b0b8d1;"></div>
     </div>
 </div>
 
@@ -389,7 +388,7 @@ $primeraSeccion = $secciones[0] ?? 'hero';
     });
 
     // ============================================================
-    // 3. MENSAJE GLOBAL
+    // 3. MENSAJE GLOBAL (solo para acciones principales)
     // ============================================================
     function mostrarMensaje(texto, tipo) {
         const msg = document.getElementById('mensajeGlobal');
@@ -411,17 +410,28 @@ $primeraSeccion = $secciones[0] ?? 'hero';
         currentSeccion = seccion;
         currentClave = clave;
         document.getElementById('imageModal').classList.add('active');
+        // Limpiar feedback anterior
+        document.getElementById('modalFeedback').textContent = '';
         // Cargar imágenes al abrir el modal
         loadImages();
     }
 
     function closeImageSelector() {
         document.getElementById('imageModal').classList.remove('active');
+        // Limpiar feedback al cerrar
+        document.getElementById('modalFeedback').textContent = '';
+        // Habilitar botón de refrescar si estaba deshabilitado
+        document.getElementById('btnRefreshImages').disabled = false;
     }
 
     function loadImages() {
         const grid = document.getElementById('imageGrid');
+        const feedback = document.getElementById('modalFeedback');
+        const btnRefresh = document.getElementById('btnRefreshImages');
+        
         grid.innerHTML = '<div class="modal-loading">Cargando imágenes...</div>';
+        feedback.textContent = '';
+        btnRefresh.disabled = true;
         
         const formData = new FormData();
         formData.append('action', 'get_images');
@@ -433,6 +443,7 @@ $primeraSeccion = $secciones[0] ?? 'hero';
         })
         .then(response => response.json())
         .then(data => {
+            btnRefresh.disabled = false;
             if (data.success && data.images && data.images.length > 0) {
                 let html = '';
                 data.images.forEach(img => {
@@ -444,8 +455,9 @@ $primeraSeccion = $secciones[0] ?? 'hero';
                     `;
                 });
                 grid.innerHTML = html;
+                feedback.textContent = '✅ ' + data.images.length + ' imágenes disponibles.';
+                feedback.style.color = '#00f5d4';
             } else {
-                // Si no hay imágenes o hubo error
                 let mensaje = data.message || 'No hay imágenes subidas aún.';
                 grid.innerHTML = `
                     <p style="color:#b0b8d1; grid-column: 1/-1; text-align:center; padding:2rem;">
@@ -460,10 +472,15 @@ $primeraSeccion = $secciones[0] ?? 'hero';
                         </span>
                     </p>
                 `;
+                feedback.textContent = '⚠️ ' + mensaje;
+                feedback.style.color = '#ff6b6b';
             }
         })
         .catch(error => {
+            btnRefresh.disabled = false;
             grid.innerHTML = `<p class="modal-error">Error al cargar imágenes: ${error.message}</p>`;
+            feedback.textContent = '❌ Error de conexión.';
+            feedback.style.color = '#ff6b6b';
             console.error('Error:', error);
         });
     }
@@ -493,8 +510,12 @@ $primeraSeccion = $secciones[0] ?? 'hero';
     }
 
     function refreshImages() {
+        // Solo refresca el contenido del modal, sin mensajes externos
+        const feedback = document.getElementById('modalFeedback');
+        feedback.textContent = '🔄 Actualizando...';
+        feedback.style.color = '#b0b8d1';
         loadImages();
-        mostrarMensaje('🔄 Imágenes actualizadas.', 'success');
+        // El mensaje de "Actualizado" se mostrará dentro del modal al finalizar loadImages()
     }
 
     document.getElementById('imageModal').addEventListener('click', function(e) {
