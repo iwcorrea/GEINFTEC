@@ -6,6 +6,9 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
+// Establecer CSP desde PHP (NO necesita .htaccess)
+header("Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https: data:; style-src 'self' 'unsafe-inline' https:; img-src 'self' data: https:; font-src 'self' data: https:; connect-src 'self' https:;");
+
 // ============================================================
 // INCLUIR FUNCIONES Y OBTENER DATOS
 // ============================================================
