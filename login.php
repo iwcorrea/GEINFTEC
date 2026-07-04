@@ -1,5 +1,7 @@
 <?php
-require_once 'config.php';
+// Iniciar sesión solo aquí (no en config.php)
+session_start();
+require_once 'funciones.php';
 
 // Si ya está logueado, redirigir a admin
 if (isset($_SESSION['admin_logged']) && $_SESSION['admin_logged'] === true) {
@@ -36,6 +38,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && empty($error)) {
     }
 }
 
+// Generar token CSRF
 $csrf_token = generateCSRFToken();
 ?>
 <!DOCTYPE html>

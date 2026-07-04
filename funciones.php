@@ -54,7 +54,7 @@ function verifyCSRFToken($token) {
     return isset($_SESSION['csrf_token']) && hash_equals($_SESSION['csrf_token'], $token);
 }
 
-// --- Seguridad: Rate limiting ---
+// --- Seguridad: Rate limiting para login ---
 function checkLoginAttempts($ip) {
     global $conn;
     $result = pg_query_params($conn, 'SELECT attempts, last_attempt FROM login_attempts WHERE ip = $1', [$ip]);
@@ -63,8 +63,9 @@ function checkLoginAttempts($ip) {
         if ($row['attempts'] >= MAX_LOGIN_ATTEMPTS) {
             $timeSince = time() - strtotime($row['last_attempt']);
             if ($timeSince < LOGIN_TIMEOUT) {
-                return false;
+                return false; // Bloqueado
             } else {
+                // Reiniciar intentos
                 pg_query_params($conn, 'DELETE FROM login_attempts WHERE ip = $1', [$ip]);
                 return true;
             }
@@ -89,7 +90,7 @@ function registerLoginAttempt($ip, $success) {
     }
 }
 
-// --- Subida a Supabase Storage ---
+// --- Subida a Supabase Storage (mejorada) ---
 function uploadToSupabase($file, $filename = null) {
     if ($file['error'] !== UPLOAD_ERR_OK) {
         return ['error' => 'Error al subir el archivo: ' . $file['error']];
