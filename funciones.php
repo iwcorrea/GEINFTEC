@@ -132,29 +132,19 @@ function uploadToSupabase($file, $filename = null) {
     
     $response = curl_exec($ch);
     $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    $curlError = curl_error($ch);
     curl_close($ch);
     
-    error_log("Supabase upload URL: " . $url);
-    
     if ($httpCode === 200 || $httpCode === 201) {
-        $publicUrl = SUPABASE_STORAGE_URL . $filename;
-        return ['success' => $publicUrl];
+        return ['success' => SUPABASE_STORAGE_URL . $filename];
     } else {
-        $errorMsg = "Error al subir a Supabase Storage. Código: $httpCode";
-        if ($curlError) {
-            $errorMsg .= " - cURL Error: $curlError";
-        } else {
-            $errorMsg .= " - Respuesta: " . substr($response, 0, 200);
-        }
-        error_log("Supabase upload error: " . $errorMsg);
-        return ['error' => $errorMsg];
+        return ['error' => "Error al subir. Código: $httpCode - " . substr($response, 0, 200)];
     }
 }
 
-// --- Listar imágenes del bucket (corregido) ---
+// --- Listar imágenes del bucket (con manejo de errores) ---
 function listImagesFromBucket() {
     $url = SUPABASE_URL . '/storage/v1/object/list/' . SUPABASE_BUCKET;
+    error_log("Supabase list URL: " . $url);
     
     $ch = curl_init($url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -166,8 +156,7 @@ function listImagesFromBucket() {
     $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
     curl_close($ch);
     
-    error_log("Supabase list URL: " . $url);
-    error_log("Supabase list response: " . $response);
+    error_log("Supabase list response: " . substr($response, 0, 200));
     
     if ($httpCode === 200) {
         $files = json_decode($response, true);

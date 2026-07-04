@@ -1,7 +1,7 @@
 <?php
 require_once 'funciones.php';
 
-// Obtener todos los datos de la BD (igual que antes)
+// Obtener datos
 $hero_titulo = getContent('hero', 'titulo', 'Innovación que');
 $hero_subtitulo = getContent('hero', 'subtitulo', 'Ingeniería, construcción y desarrollo de software con visión de vanguardia. Transformamos ideas en realidades digitales y físicas.');
 $hero_frases = getContent('hero', 'frases', '["Ingeniería de vanguardia","Construcción inteligente","Software que transforma"]');
@@ -9,7 +9,6 @@ $hero_frases_array = json_decode($hero_frases, true) ?: ["Ingeniería de vanguar
 
 $servicios_titulo = getContent('servicios', 'titulo', 'Nuestros');
 $servicios_sub = getContent('servicios', 'subtitulo', 'Soluciones integrales que combinan ingeniería de calidad con tecnología de punta.');
-
 $servicios_items = [];
 for ($i = 1; $i <= 6; $i++) {
     $servicios_items[] = [
@@ -21,7 +20,6 @@ for ($i = 1; $i <= 6; $i++) {
 
 $proyectos_titulo = getContent('proyectos', 'titulo', 'Proyectos');
 $proyectos_sub = getContent('proyectos', 'subtitulo', 'Obras y soluciones que reflejan nuestra excelencia y compromiso.');
-
 $proyectos_items = [];
 for ($i = 1; $i <= 3; $i++) {
     $proyectos_items[] = [
@@ -33,8 +31,11 @@ for ($i = 1; $i <= 3; $i++) {
 
 $tecnologias_titulo = getContent('tecnologias', 'titulo', 'Tecnologías');
 $tecnologias_sub = getContent('tecnologias', 'subtitulo', 'Herramientas y plataformas con las que trabajamos día a día.');
-$tecnologias_lista = getContent('tecnologias', 'lista', '["⚛️ React","🟢 Node.js","🐍 Python","☁️ AWS","🐳 Docker","🗄️ PostgreSQL","📱 Flutter","🔷 TypeScript"]');
-$tecnologias_array = json_decode($tecnologias_lista, true) ?: ["⚛️ React","🟢 Node.js","🐍 Python","☁️ AWS","🐳 Docker","🗄️ PostgreSQL","📱 Flutter","🔷 TypeScript"];
+$tecnologias_raw = getContent('tecnologias', 'lista', '[{"icon":"⚛️","name":"React"},{"icon":"🟢","name":"Node.js"},{"icon":"🐍","name":"Python"},{"icon":"☁️","name":"AWS"},{"icon":"🐳","name":"Docker"},{"icon":"🗄️","name":"PostgreSQL"},{"icon":"📱","name":"Flutter"},{"icon":"🔷","name":"TypeScript"}]');
+$tecnologias_array = json_decode($tecnologias_raw, true);
+if (!is_array($tecnologias_array)) {
+    $tecnologias_array = [["icon"=>"⚛️","name"=>"React"],["icon"=>"🟢","name"=>"Node.js"],["icon"=>"🐍","name"=>"Python"],["icon"=>"☁️","name"=>"AWS"],["icon"=>"🐳","name"=>"Docker"],["icon"=>"🗄️","name"=>"PostgreSQL"],["icon"=>"📱","name"=>"Flutter"],["icon"=>"🔷","name"=>"TypeScript"]];
+}
 
 $estadisticas_titulo = getContent('estadisticas', 'titulo', 'En');
 $estadisticas_sub = getContent('estadisticas', 'subtitulo', 'La confianza de nuestros clientes y el impacto de nuestros proyectos.');
@@ -51,7 +52,6 @@ unset($stat);
 
 $equipo_titulo = getContent('equipo', 'titulo', 'Nuestro');
 $equipo_sub = getContent('equipo', 'subtitulo', 'Profesionales apasionados por la innovación y la excelencia.');
-
 $equipo_items = [];
 for ($i = 1; $i <= 4; $i++) {
     $equipo_items[] = [
@@ -69,12 +69,10 @@ $contacto_telefono = getContent('contacto', 'telefono', '+57 300 123 4567');
 $contacto_email = getContent('contacto', 'email', 'contacto@geinftec.com');
 $contacto_horario = getContent('contacto', 'horario', 'Lun – Vie: 8:00 am – 6:00 pm');
 $contacto_mapa = getContent('contacto', 'mapa_embed', 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3976.785140536432!2d-74.08373268519861!3d4.624548343699416!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8e3f9a3f5c1b2e6b%3A0x5f7b6c8a0a2b9c0d!2sBogot%C3%A1!5e0!3m2!1ses!2sco!4v1650000000000!5m2!1ses!2sco');
-
 $social_linkedin = getContent('sociales', 'linkedin', '#');
 $social_twitter = getContent('sociales', 'twitter', '#');
 $social_instagram = getContent('sociales', 'instagram', '#');
 $social_youtube = getContent('sociales', 'youtube', '#');
-
 $footer_texto = getContent('footer', 'texto', 'Ingeniería, construcción y tecnología para un futuro sostenible e inteligente.');
 $footer_copyright = getContent('footer', 'copyright', '&copy; 2026 GEINFTEC S.A.S. Todos los derechos reservados. | Diseñado con 💙 en Colombia.');
 ?>
@@ -90,10 +88,7 @@ $footer_copyright = getContent('footer', 'copyright', '&copy; 2026 GEINFTEC S.A.
     <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-    <!-- Progress Bar -->
     <div id="progress-bar"></div>
-
-    <!-- HEADER -->
     <header class="header" id="header">
         <div class="container">
             <div class="logo">GEINFTEC <span>S.A.S.</span></div>
@@ -111,14 +106,10 @@ $footer_copyright = getContent('footer', 'copyright', '&copy; 2026 GEINFTEC S.A.
         </div>
     </header>
 
-    <!-- HERO -->
     <section class="hero" id="hero">
         <canvas id="hero-canvas"></canvas>
         <div class="container hero-content">
-            <h1 class="hero-title">
-                <?php echo $hero_titulo; ?><br />
-                <span class="highlight">construye el futuro</span>
-            </h1>
+            <h1 class="hero-title"><?php echo $hero_titulo; ?><br /><span class="highlight">construye el futuro</span></h1>
             <div style="font-size: 2rem; font-weight: 600; margin-bottom: 0.5rem;">
                 <span id="rotating-text" data-phrases='<?php echo json_encode($hero_frases_array); ?>'></span>
             </div>
@@ -128,7 +119,6 @@ $footer_copyright = getContent('footer', 'copyright', '&copy; 2026 GEINFTEC S.A.
         </div>
     </section>
 
-    <!-- SERVICIOS -->
     <section id="servicios">
         <div class="container">
             <h2 class="section-title fade-up"><?php echo $servicios_titulo; ?> <span>Servicios</span></h2>
@@ -145,7 +135,6 @@ $footer_copyright = getContent('footer', 'copyright', '&copy; 2026 GEINFTEC S.A.
         </div>
     </section>
 
-    <!-- PROYECTOS -->
     <section id="proyectos" style="background: rgba(0,0,0,0.2);">
         <div class="container">
             <h2 class="section-title fade-up"><?php echo $proyectos_titulo; ?> <span>Destacados</span></h2>
@@ -165,20 +154,18 @@ $footer_copyright = getContent('footer', 'copyright', '&copy; 2026 GEINFTEC S.A.
         </div>
     </section>
 
-    <!-- TECNOLOGÍAS -->
     <section id="tecnologias">
         <div class="container">
             <h2 class="section-title fade-up"><?php echo $tecnologias_titulo; ?> <span>que impulsamos</span></h2>
             <p class="section-sub fade-up"><?php echo $tecnologias_sub; ?></p>
             <div class="tech-grid fade-up">
                 <?php foreach ($tecnologias_array as $tech): ?>
-                <div class="tech-item"><?php echo $tech; ?></div>
+                <div class="tech-item"><span class="icon"><?php echo $tech['icon']; ?></span> <?php echo $tech['name']; ?></div>
                 <?php endforeach; ?>
             </div>
         </div>
     </section>
 
-    <!-- ESTADÍSTICAS -->
     <section id="estadisticas" style="background: rgba(0,0,0,0.15);">
         <div class="container">
             <h2 class="section-title fade-up"><?php echo $estadisticas_titulo; ?> <span>números</span></h2>
@@ -194,7 +181,6 @@ $footer_copyright = getContent('footer', 'copyright', '&copy; 2026 GEINFTEC S.A.
         </div>
     </section>
 
-    <!-- EQUIPO -->
     <section id="equipo">
         <div class="container">
             <h2 class="section-title fade-up"><?php echo $equipo_titulo; ?> <span>Equipo</span></h2>
@@ -212,7 +198,6 @@ $footer_copyright = getContent('footer', 'copyright', '&copy; 2026 GEINFTEC S.A.
         </div>
     </section>
 
-    <!-- CONTACTO -->
     <section id="contacto" style="background: rgba(0,0,0,0.2);">
         <div class="container">
             <h2 class="section-title fade-up"><?php echo $contacto_titulo; ?> <span>ahora</span></h2>
@@ -241,7 +226,6 @@ $footer_copyright = getContent('footer', 'copyright', '&copy; 2026 GEINFTEC S.A.
         </div>
     </section>
 
-    <!-- FOOTER -->
     <footer class="footer">
         <div class="container">
             <div class="footer-grid">
@@ -284,9 +268,7 @@ $footer_copyright = getContent('footer', 'copyright', '&copy; 2026 GEINFTEC S.A.
         </div>
     </footer>
 
-    <!-- Botón volver arriba -->
     <button id="back-to-top" aria-label="Volver arriba">↑</button>
-
     <script src="script.js"></script>
 </body>
 </html>
