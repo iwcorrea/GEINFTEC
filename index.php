@@ -1,6 +1,10 @@
 <?php
 require_once 'funciones.php';
 
+// ============================================================
+// OBTENER TODOS LOS DATOS DE LA BD
+// ============================================================
+
 // --- Hero ---
 $hero_titulo = getContent('hero', 'titulo', 'Innovación que');
 $hero_subtitulo = getContent('hero', 'subtitulo', 'Ingeniería, construcción y desarrollo de software con visión de vanguardia. Transformamos ideas en realidades digitales y físicas.');
@@ -31,13 +35,22 @@ for ($i = 1; $i <= 3; $i++) {
     ];
 }
 
-// --- Tecnologías (con iconos) ---
+// --- Tecnologías (con iconos individuales) ---
 $tecnologias_titulo = getContent('tecnologias', 'titulo', 'Tecnologías');
 $tecnologias_sub = getContent('tecnologias', 'subtitulo', 'Herramientas y plataformas con las que trabajamos día a día.');
 $tecnologias_raw = getContent('tecnologias', 'lista', '[{"icon":"⚛️","name":"React"},{"icon":"🟢","name":"Node.js"},{"icon":"🐍","name":"Python"},{"icon":"☁️","name":"AWS"},{"icon":"🐳","name":"Docker"},{"icon":"🗄️","name":"PostgreSQL"},{"icon":"📱","name":"Flutter"},{"icon":"🔷","name":"TypeScript"}]');
 $tecnologias_array = json_decode($tecnologias_raw, true);
 if (!is_array($tecnologias_array)) {
-    $tecnologias_array = [["icon"=>"⚛️","name"=>"React"],["icon"=>"🟢","name"=>"Node.js"],["icon"=>"🐍","name"=>"Python"],["icon"=>"☁️","name"=>"AWS"],["icon"=>"🐳","name"=>"Docker"],["icon"=>"🗄️","name"=>"PostgreSQL"],["icon"=>"📱","name"=>"Flutter"],["icon"=>"🔷","name"=>"TypeScript"]];
+    $tecnologias_array = [
+        ["icon" => "⚛️", "name" => "React"],
+        ["icon" => "🟢", "name" => "Node.js"],
+        ["icon" => "🐍", "name" => "Python"],
+        ["icon" => "☁️", "name" => "AWS"],
+        ["icon" => "🐳", "name" => "Docker"],
+        ["icon" => "🗄️", "name" => "PostgreSQL"],
+        ["icon" => "📱", "name" => "Flutter"],
+        ["icon" => "🔷", "name" => "TypeScript"]
+    ];
 }
 
 // --- Estadísticas ---
@@ -98,7 +111,11 @@ $footer_copyright = getContent('footer', 'copyright', '&copy; 2026 GEINFTEC S.A.
     <link rel="stylesheet" href="style.css" />
 </head>
 <body>
+
+    <!-- Progress Bar -->
     <div id="progress-bar"></div>
+
+    <!-- HEADER -->
     <header class="header" id="header">
         <div class="container">
             <div class="logo">GEINFTEC <span>S.A.S.</span></div>
@@ -116,10 +133,14 @@ $footer_copyright = getContent('footer', 'copyright', '&copy; 2026 GEINFTEC S.A.
         </div>
     </header>
 
+    <!-- HERO -->
     <section class="hero" id="hero">
         <canvas id="hero-canvas"></canvas>
         <div class="container hero-content">
-            <h1 class="hero-title"><?php echo $hero_titulo; ?><br /><span class="highlight">construye el futuro</span></h1>
+            <h1 class="hero-title">
+                <?php echo $hero_titulo; ?><br />
+                <span class="highlight">construye el futuro</span>
+            </h1>
             <div style="font-size: 2rem; font-weight: 600; margin-bottom: 0.5rem;">
                 <span id="rotating-text" data-phrases='<?php echo json_encode($hero_frases_array); ?>'></span>
             </div>
@@ -129,6 +150,7 @@ $footer_copyright = getContent('footer', 'copyright', '&copy; 2026 GEINFTEC S.A.
         </div>
     </section>
 
+    <!-- SERVICIOS -->
     <section id="servicios">
         <div class="container">
             <h2 class="section-title fade-up"><?php echo $servicios_titulo; ?> <span>Servicios</span></h2>
@@ -145,6 +167,7 @@ $footer_copyright = getContent('footer', 'copyright', '&copy; 2026 GEINFTEC S.A.
         </div>
     </section>
 
+    <!-- PROYECTOS -->
     <section id="proyectos" style="background: rgba(0,0,0,0.2);">
         <div class="container">
             <h2 class="section-title fade-up"><?php echo $proyectos_titulo; ?> <span>Destacados</span></h2>
@@ -164,18 +187,23 @@ $footer_copyright = getContent('footer', 'copyright', '&copy; 2026 GEINFTEC S.A.
         </div>
     </section>
 
+    <!-- TECNOLOGÍAS -->
     <section id="tecnologias">
         <div class="container">
             <h2 class="section-title fade-up"><?php echo $tecnologias_titulo; ?> <span>que impulsamos</span></h2>
             <p class="section-sub fade-up"><?php echo $tecnologias_sub; ?></p>
             <div class="tech-grid fade-up">
                 <?php foreach ($tecnologias_array as $tech): ?>
-                <div class="tech-item"><span class="icon"><?php echo $tech['icon']; ?></span> <?php echo $tech['name']; ?></div>
+                <div class="tech-item">
+                    <span class="icon"><?php echo $tech['icon']; ?></span>
+                    <?php echo $tech['name']; ?>
+                </div>
                 <?php endforeach; ?>
             </div>
         </div>
     </section>
 
+    <!-- ESTADÍSTICAS -->
     <section id="estadisticas" style="background: rgba(0,0,0,0.15);">
         <div class="container">
             <h2 class="section-title fade-up"><?php echo $estadisticas_titulo; ?> <span>números</span></h2>
@@ -191,6 +219,7 @@ $footer_copyright = getContent('footer', 'copyright', '&copy; 2026 GEINFTEC S.A.
         </div>
     </section>
 
+    <!-- EQUIPO -->
     <section id="equipo">
         <div class="container">
             <h2 class="section-title fade-up"><?php echo $equipo_titulo; ?> <span>Equipo</span></h2>
@@ -208,6 +237,7 @@ $footer_copyright = getContent('footer', 'copyright', '&copy; 2026 GEINFTEC S.A.
         </div>
     </section>
 
+    <!-- CONTACTO -->
     <section id="contacto" style="background: rgba(0,0,0,0.2);">
         <div class="container">
             <h2 class="section-title fade-up"><?php echo $contacto_titulo; ?> <span>ahora</span></h2>
@@ -236,6 +266,7 @@ $footer_copyright = getContent('footer', 'copyright', '&copy; 2026 GEINFTEC S.A.
         </div>
     </section>
 
+    <!-- FOOTER -->
     <footer class="footer">
         <div class="container">
             <div class="footer-grid">
@@ -278,7 +309,9 @@ $footer_copyright = getContent('footer', 'copyright', '&copy; 2026 GEINFTEC S.A.
         </div>
     </footer>
 
+    <!-- Botón volver arriba -->
     <button id="back-to-top" aria-label="Volver arriba">↑</button>
+
     <script src="script.js"></script>
 </body>
 </html>
