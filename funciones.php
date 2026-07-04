@@ -1,7 +1,7 @@
 <?php
 require_once 'config.php';
 
-// --- Funciones de base de datos (sin cambios) ---
+// --- Funciones de base de datos ---
 function getContent($seccion, $clave, $default = '') {
     global $conn;
     $result = pg_query_params($conn, 'SELECT valor FROM contenido WHERE seccion = $1 AND clave = $2', [$seccion, $clave]);
@@ -89,7 +89,7 @@ function registerLoginAttempt($ip, $success) {
     }
 }
 
-// --- Subida a Supabase Storage (CORREGIDA) ---
+// --- Subida a Supabase Storage (CORREGIDA DEFINITIVA) ---
 function uploadToSupabase($file, $filename = null) {
     // Validar archivo
     if ($file['error'] !== UPLOAD_ERR_OK) {
@@ -118,21 +118,19 @@ function uploadToSupabase($file, $filename = null) {
         return ['error' => 'No se pudo leer el archivo.'];
     }
     
-    // --- Construir la URL con el endpoint /upload/ ---
-    $url = SUPABASE_URL . '/storage/v1/upload/' . SUPABASE_BUCKET . '/' . $filename;
+    // --- Endpoint correcto: /storage/v1/object/:bucket/:filename ---
+    $url = SUPABASE_URL . '/storage/v1/object/' . SUPABASE_BUCKET . '/' . $filename;
+    // Agregar apikey como query param por si acaso
+    $url .= '?apikey=' . urlencode(SUPABASE_ANON_KEY);
     
-    // Agregar el apikey como query param por si falla el header
-    $url .= '?apikey=' . SUPABASE_ANON_KEY;
-    
-    // Inicializar cURL
     $ch = curl_init($url);
     curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'POST');
     curl_setopt($ch, CURLOPT_POSTFIELDS, $fileContent);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_HTTPHEADER, [
         'Content-Type: ' . $mimeType,
-        'apikey: ' . SUPABASE_ANON_KEY,          // Header con apikey
-        'Authorization: Bearer ' . SUPABASE_ANON_KEY, // También lo dejamos por compatibilidad
+        'apikey: ' . SUPABASE_ANON_KEY,
+        'Authorization: Bearer ' . SUPABASE_ANON_KEY,
         'Content-Length: ' . strlen($fileContent)
     ]);
     
@@ -141,11 +139,12 @@ function uploadToSupabase($file, $filename = null) {
     curl_close($ch);
     
     if ($httpCode === 200 || $httpCode === 201) {
-        // La URL pública es la misma, pero con /object/public/
         $publicUrl = SUPABASE_STORAGE_URL . $filename;
         return ['success' => $publicUrl];
     } else {
-        return ['error' => "Error al subir a Supabase Storage. Código: $httpCode - " . substr($response, 0, 200)];
+        // Mensaje de depuración (puedes comentar en producción)
+        $errorMsg = "Error al subir a Supabase Storage. Código: $httpCode - " . substr($response, 0, 200);
+        return ['error' => $errorMsg];
     }
 }
 ?>

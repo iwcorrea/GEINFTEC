@@ -17,8 +17,9 @@ if (!$conn) {
 pg_query($conn, "SET search_path TO public;");
 
 // --- Configuración de Supabase Storage ---
-define('SUPABASE_URL', getenv('SUPABASE_URL') ?: 'https://olcfippgkuhjvssnlxvn.supabase.co');
-define('SUPABASE_ANON_KEY', getenv('SUPABASE_ANON_KEY') ?: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9sY2ZpcHBna3VoanZzc25seHZuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMwNjQ4NzksImV4cCI6MjA5ODY0MDg3OX0.XtsI8ixVoGFPOiBiYhfZGrx_na6BhmGgAzgpyKYbaSk'); // ¡REEMPLAZA POR TU CLAVE REAL!
+// Asegúrate de que SUPABASE_URL no tenga barra al final
+define('SUPABASE_URL', rtrim(getenv('SUPABASE_URL') ?: 'https://olcfippgkuhjvssnlxvn.supabase.co', '/'));
+define('SUPABASE_ANON_KEY', getenv('SUPABASE_ANON_KEY') ?: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9sY2ZpcHBna3VoanZzc25seHZuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMwNjQ4NzksImV4cCI6MjA5ODY0MDg3OX0.XtsI8ixVoGFPOiBiYhfZGrx_na6BhmGgAzgpyKYbaSk');
 define('SUPABASE_BUCKET', 'geinftec');
 define('SUPABASE_STORAGE_URL', SUPABASE_URL . '/storage/v1/object/public/' . SUPABASE_BUCKET . '/');
 
@@ -27,9 +28,4 @@ define('MAX_LOGIN_ATTEMPTS', 5);
 define('LOGIN_TIMEOUT', 900);
 define('SESSION_LIFETIME', 1800);
 define('MAX_FILE_SIZE', 5 * 1024 * 1024);
-
-// Verificar que la clave no sea el placeholder
-if (SUPABASE_ANON_KEY === 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9sY2ZpcHBna3VoanZzc25seHZuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMwNjQ4NzksImV4cCI6MjA5ODY0MDg3OX0.XtsI8ixVoGFPOiBiYhfZGrx_na6BhmGgAzgpyKYbaSk') {
-    // Puedes lanzar una advertencia o simplemente continuar (en Render usas variable de entorno)
-}
 ?>
