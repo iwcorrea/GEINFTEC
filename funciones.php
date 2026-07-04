@@ -1,7 +1,6 @@
 <?php
 require_once 'config.php';
 
-// --- Funciones de base de datos ---
 function getContent($seccion, $clave, $default = '') {
     global $conn;
     $result = pg_query_params($conn, 'SELECT valor FROM contenido WHERE seccion = $1 AND clave = $2', [$seccion, $clave]);
@@ -42,7 +41,6 @@ function getAllContent() {
     return $data;
 }
 
-// --- Seguridad: CSRF ---
 function generateCSRFToken() {
     if (empty($_SESSION['csrf_token'])) {
         $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
@@ -54,7 +52,6 @@ function verifyCSRFToken($token) {
     return isset($_SESSION['csrf_token']) && hash_equals($_SESSION['csrf_token'], $token);
 }
 
-// --- Seguridad: Rate limiting ---
 function checkLoginAttempts($ip) {
     global $conn;
     $result = pg_query_params($conn, 'SELECT attempts, last_attempt FROM login_attempts WHERE ip = $1', [$ip]);
@@ -89,7 +86,6 @@ function registerLoginAttempt($ip, $success) {
     }
 }
 
-// --- Subida a Supabase Storage ---
 function uploadToSupabase($file, $filename = null) {
     if ($file['error'] !== UPLOAD_ERR_OK) {
         return ['error' => 'Error al subir el archivo: ' . $file['error']];
@@ -141,11 +137,8 @@ function uploadToSupabase($file, $filename = null) {
     }
 }
 
-// --- Listar imágenes del bucket (con manejo de errores) ---
 function listImagesFromBucket() {
     $url = SUPABASE_URL . '/storage/v1/object/list/' . SUPABASE_BUCKET;
-    error_log("Supabase list URL: " . $url);
-    
     $ch = curl_init($url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_HTTPHEADER, [
@@ -155,8 +148,6 @@ function listImagesFromBucket() {
     $response = curl_exec($ch);
     $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
     curl_close($ch);
-    
-    error_log("Supabase list response: " . substr($response, 0, 200));
     
     if ($httpCode === 200) {
         $files = json_decode($response, true);
