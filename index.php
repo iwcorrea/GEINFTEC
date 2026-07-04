@@ -1,4 +1,9 @@
 <?php
+// Cabeceras de seguridad
+header("X-Frame-Options: DENY");
+header("X-Content-Type-Options: nosniff");
+header("Referrer-Policy: strict-origin-when-cross-origin");
+header("Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https:; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data: https:; connect-src 'self' https:;");
 require_once 'funciones.php';
 
 // Obtener datos de la BD con fallbacks

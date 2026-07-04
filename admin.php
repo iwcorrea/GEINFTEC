@@ -2,77 +2,60 @@
 session_start();
 require_once 'funciones.php';
 
-// Verificar autenticación y tiempo de sesión
+// Verificar autenticación
 if (!isset($_SESSION['admin_logged']) || $_SESSION['admin_logged'] !== true) {
     header('Location: login.php');
     exit;
 }
 
-// Tiempo de inactividad (30 minutos)
-$inactivity_time = 1800; // 30 segundos para pruebas, cambiar a 1800 en producción
-if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time'] > $inactivity_time)) {
-    session_destroy();
-    header('Location: login.php?expired=1');
-    exit;
-}
-// Renovar tiempo de actividad
-$_SESSION['login_time'] = time();
-
 $mensaje = '';
 $error = '';
 
-// Procesar acciones POST
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
-    // Validar token CSRF (opcional, pero recomendable)
-    // if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) { die('CSRF token inválido'); }
-    
-    if ($_POST['action'] === 'update') {
-        $seccion = trim($_POST['seccion'] ?? '');
-        $clave = trim($_POST['clave'] ?? '');
-        $valor = trim($_POST['valor'] ?? '');
-        if ($seccion && $clave) {
-            if (updateContent($seccion, $clave, $valor)) {
-                $mensaje = "✅ Dato actualizado correctamente.";
-            } else {
-                $error = "❌ Error al actualizar.";
-            }
-        } else {
-            $error = "❌ Datos incompletos.";
-        }
-    } elseif ($_POST['action'] === 'upload_image') {
-        $seccion = trim($_POST['seccion'] ?? '');
-        $clave = trim($_POST['clave'] ?? '');
-        if ($seccion && $clave && isset($_FILES['imagen']) && $_FILES['imagen']['error'] === UPLOAD_ERR_OK) {
-            $uploadDir = 'uploads/';
-            if (!is_dir($uploadDir)) mkdir($uploadDir, 0777, true);
-            $ext = pathinfo($_FILES['imagen']['name'], PATHINFO_EXTENSION);
-            $filename = uniqid() . '.' . $ext;
-            $destino = $uploadDir . $filename;
-            if (move_uploaded_file($_FILES['imagen']['tmp_name'], $destino)) {
-                if (updateContent($seccion, $clave, $destino)) {
-                    $mensaje = "✅ Imagen subida y guardada.";
+    // Verificar CSRF
+    if (!verifyCSRFToken($_POST['csrf_token'] ?? '')) {
+        $error = 'Error de seguridad. Intenta nuevamente.';
+    } else {
+        if ($_POST['action'] === 'update') {
+            $seccion = $_POST['seccion'] ?? '';
+            $clave = $_POST['clave'] ?? '';
+            $valor = $_POST['valor'] ?? '';
+            if ($seccion && $clave) {
+                if (updateContent($seccion, $clave, $valor)) {
+                    $mensaje = "✅ Dato actualizado correctamente.";
                 } else {
-                    $error = "❌ Error al guardar la ruta.";
+                    $error = "❌ Error al actualizar.";
+                }
+            }
+        } elseif ($_POST['action'] === 'upload_image') {
+            $seccion = $_POST['seccion'] ?? '';
+            $clave = $_POST['clave'] ?? '';
+            if ($seccion && $clave && isset($_FILES['imagen']) && $_FILES['imagen']['error'] === UPLOAD_ERR_OK) {
+                $result = uploadToSupabase($_FILES['imagen']);
+                if (isset($result['error'])) {
+                    $error = "❌ " . $result['error'];
+                } else {
+                    $publicUrl = $result['success'];
+                    if (updateContent($seccion, $clave, $publicUrl)) {
+                        $mensaje = "✅ Imagen subida a Supabase Storage y guardada en la base de datos.";
+                    } else {
+                        $error = "❌ Error al guardar la URL en la base de datos.";
+                    }
                 }
             } else {
-                $error = "❌ Error al mover el archivo.";
+                $error = "❌ No se seleccionó ninguna imagen o hubo un error.";
             }
-        } else {
-            $error = "❌ No se seleccionó ninguna imagen o hubo un error.";
         }
     }
 }
 
-// Obtener todo el contenido
+// Generar token CSRF
+$csrf_token = generateCSRFToken();
+
 $contenido = getAllContent();
 $totalCampos = 0;
 foreach ($contenido as $seccion => $datos) {
     $totalCampos += count($datos);
-}
-
-// Generar token CSRF
-if (empty($_SESSION['csrf_token'])) {
-    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
 }
 ?>
 <!DOCTYPE html>
@@ -83,7 +66,7 @@ if (empty($_SESSION['csrf_token'])) {
     <title>Administrador GEINFTEC</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
-        /* (Mantén los estilos que ya tenías, añado algunos para notificaciones y botones) */
+        /* (Mismo CSS que antes, sin cambios) */
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: 'Inter', sans-serif; background: #0b132b; color: #f8fafc; padding: 2rem; }
         .container { max-width: 1200px; margin: 0 auto; }
@@ -121,8 +104,6 @@ if (empty($_SESSION['csrf_token'])) {
         .empty { color: #666; font-style: italic; }
         .recomendacion { background: rgba(0,245,212,0.08); padding: 0.5rem 1rem; border-radius: 8px; border-left: 3px solid #00f5d4; margin: 0.5rem 0; }
         .recomendacion strong { color: #00f5d4; }
-        .fade-in { animation: fadeIn 0.3s; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
         @media (max-width: 768px) {
             .campo label { min-width: 100%; }
             .header-admin { flex-direction: column; align-items: stretch; }
@@ -130,7 +111,7 @@ if (empty($_SESSION['csrf_token'])) {
     </style>
 </head>
 <body>
-<div class="container fade-in">
+<div class="container">
     <!-- Header -->
     <div class="header-admin">
         <div>
@@ -148,58 +129,58 @@ if (empty($_SESSION['csrf_token'])) {
         <h2>👋 ¡Hola, administrador!</h2>
         <p>
             Desde aquí puedes editar <strong>todos los textos, títulos, estadísticas e imágenes</strong> del sitio.
-            Cada campo tiene un formulario para actualizar su valor. <br>
+            Las imágenes se suben a <strong>Supabase Storage</strong> y son persistentes. <br>
             <span style="color:#00f5d4;">✅ Los cambios se reflejan al instante en la página pública.</span>
         </p>
     </div>
 
     <!-- Mensajes -->
     <?php if ($mensaje): ?>
-        <div class="mensaje success fade-in"><?php echo $mensaje; ?></div>
+        <div class="mensaje success"><?php echo htmlspecialchars($mensaje); ?></div>
     <?php endif; ?>
     <?php if ($error): ?>
-        <div class="mensaje error fade-in"><?php echo $error; ?></div>
+        <div class="mensaje error"><?php echo htmlspecialchars($error); ?></div>
     <?php endif; ?>
 
     <!-- Contenido -->
     <?php foreach ($contenido as $seccion => $datos): ?>
         <div class="seccion">
             <h2>
-                <?php echo ucfirst($seccion); ?>
+                <?php echo htmlspecialchars(ucfirst($seccion)); ?>
                 <small><?php echo count($datos); ?> campos</small>
             </h2>
             <?php foreach ($datos as $clave => $valor): ?>
                 <div class="campo">
-                    <label for="<?php echo $seccion.'_'.$clave; ?>"><?php echo $clave; ?></label>
+                    <label for="<?php echo $seccion.'_'.$clave; ?>"><?php echo htmlspecialchars($clave); ?></label>
                     <div class="campo-valor">
                         <?php if (strpos($clave, 'imagen') !== false || strpos($clave, 'img') !== false || strpos($clave, 'foto') !== false): ?>
                             <div class="subir-imagen">
-                                <?php if ($valor && file_exists($valor)): ?>
-                                    <img src="<?php echo $valor; ?>" alt="preview" class="imagen-preview">
+                                <?php if ($valor && filter_var($valor, FILTER_VALIDATE_URL)): ?>
+                                    <img src="<?php echo htmlspecialchars($valor); ?>" alt="preview" class="imagen-preview">
                                 <?php endif; ?>
                                 <form method="post" enctype="multipart/form-data" style="display:inline-flex; gap:0.5rem; align-items:center; flex-wrap:wrap;">
                                     <input type="hidden" name="action" value="upload_image">
-                                    <input type="hidden" name="seccion" value="<?php echo $seccion; ?>">
-                                    <input type="hidden" name="clave" value="<?php echo $clave; ?>">
-                                    <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
+                                    <input type="hidden" name="seccion" value="<?php echo htmlspecialchars($seccion); ?>">
+                                    <input type="hidden" name="clave" value="<?php echo htmlspecialchars($clave); ?>">
+                                    <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrf_token); ?>">
                                     <input type="file" name="imagen" accept="image/*" required>
-                                    <button type="submit" class="btn">Subir</button>
+                                    <button type="submit" class="btn">Subir a Supabase</button>
                                 </form>
                                 <form method="post" style="display:inline-flex; gap:0.5rem; align-items:center; flex-wrap:wrap;">
                                     <input type="hidden" name="action" value="update">
-                                    <input type="hidden" name="seccion" value="<?php echo $seccion; ?>">
-                                    <input type="hidden" name="clave" value="<?php echo $clave; ?>">
-                                    <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
-                                    <input type="text" name="valor" value="<?php echo htmlspecialchars($valor); ?>" placeholder="Ruta o URL" style="flex:1; min-width:120px;">
+                                    <input type="hidden" name="seccion" value="<?php echo htmlspecialchars($seccion); ?>">
+                                    <input type="hidden" name="clave" value="<?php echo htmlspecialchars($clave); ?>">
+                                    <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrf_token); ?>">
+                                    <input type="text" name="valor" value="<?php echo htmlspecialchars($valor); ?>" placeholder="URL de imagen" style="flex:1; min-width:120px;">
                                     <button type="submit" class="btn btn-edit">Actualizar</button>
                                 </form>
                             </div>
                         <?php else: ?>
                             <form method="post" style="display:flex; gap:0.5rem; width:100%; flex-wrap:wrap;">
                                 <input type="hidden" name="action" value="update">
-                                <input type="hidden" name="seccion" value="<?php echo $seccion; ?>">
-                                <input type="hidden" name="clave" value="<?php echo $clave; ?>">
-                                <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
+                                <input type="hidden" name="seccion" value="<?php echo htmlspecialchars($seccion); ?>">
+                                <input type="hidden" name="clave" value="<?php echo htmlspecialchars($clave); ?>">
+                                <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrf_token); ?>">
                                 <?php if (strlen($valor) > 100): ?>
                                     <textarea name="valor" style="flex:1; min-width:200px;"><?php echo htmlspecialchars($valor); ?></textarea>
                                 <?php else: ?>
@@ -217,7 +198,7 @@ if (empty($_SESSION['csrf_token'])) {
                 </div>
             <?php endforeach; ?>
             <div class="recomendacion">
-                💡 <strong>Tip:</strong> Si quieres añadir imágenes para proyectos o equipo, crea claves como <code>proyectos_img1</code>, <code>equipo_img1</code>, etc., en la sección correspondiente.
+                💡 <strong>Tip:</strong> Las imágenes se suben a Supabase Storage y se guarda la URL pública. Puedes usar cualquier imagen de internet pegando su URL.
             </div>
         </div>
     <?php endforeach; ?>
