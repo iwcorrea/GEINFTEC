@@ -1,7 +1,7 @@
 <?php
 require_once 'config.php';
 
-// --- Funciones de base de datos ---
+// --- Funciones de base de datos (sin cambios) ---
 function getContent($seccion, $clave, $default = '') {
     global $conn;
     $result = pg_query_params($conn, 'SELECT valor FROM contenido WHERE seccion = $1 AND clave = $2', [$seccion, $clave]);
@@ -54,7 +54,7 @@ function verifyCSRFToken($token) {
     return isset($_SESSION['csrf_token']) && hash_equals($_SESSION['csrf_token'], $token);
 }
 
-// --- Seguridad: Rate limiting para login ---
+// --- Seguridad: Rate limiting ---
 function checkLoginAttempts($ip) {
     global $conn;
     $result = pg_query_params($conn, 'SELECT attempts, last_attempt FROM login_attempts WHERE ip = $1', [$ip]);
@@ -63,9 +63,8 @@ function checkLoginAttempts($ip) {
         if ($row['attempts'] >= MAX_LOGIN_ATTEMPTS) {
             $timeSince = time() - strtotime($row['last_attempt']);
             if ($timeSince < LOGIN_TIMEOUT) {
-                return false; // Bloqueado
+                return false;
             } else {
-                // Reiniciar intentos
                 pg_query_params($conn, 'DELETE FROM login_attempts WHERE ip = $1', [$ip]);
                 return true;
             }
@@ -90,8 +89,9 @@ function registerLoginAttempt($ip, $success) {
     }
 }
 
-// --- Subida a Supabase Storage (mejorada) ---
+// --- Subida a Supabase Storage (CORREGIDA) ---
 function uploadToSupabase($file, $filename = null) {
+    // Validar archivo
     if ($file['error'] !== UPLOAD_ERR_OK) {
         return ['error' => 'Error al subir el archivo: ' . $file['error']];
     }
@@ -113,20 +113,26 @@ function uploadToSupabase($file, $filename = null) {
     $filename = $filename ?: uniqid() . '.' . $ext;
     $filename = preg_replace('/[^a-zA-Z0-9_.-]/', '_', $filename);
     
-    $filepath = $file['tmp_name'];
-    $fileContent = file_get_contents($filepath);
+    $fileContent = file_get_contents($file['tmp_name']);
     if ($fileContent === false) {
         return ['error' => 'No se pudo leer el archivo.'];
     }
     
-    $url = SUPABASE_URL . '/storage/v1/object/' . SUPABASE_BUCKET . '/' . $filename;
+    // --- Construir la URL con el endpoint /upload/ ---
+    $url = SUPABASE_URL . '/storage/v1/upload/' . SUPABASE_BUCKET . '/' . $filename;
+    
+    // Agregar el apikey como query param por si falla el header
+    $url .= '?apikey=' . SUPABASE_ANON_KEY;
+    
+    // Inicializar cURL
     $ch = curl_init($url);
     curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'POST');
     curl_setopt($ch, CURLOPT_POSTFIELDS, $fileContent);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_HTTPHEADER, [
         'Content-Type: ' . $mimeType,
-        'Authorization: Bearer ' . SUPABASE_ANON_KEY,
+        'apikey: ' . SUPABASE_ANON_KEY,          // Header con apikey
+        'Authorization: Bearer ' . SUPABASE_ANON_KEY, // También lo dejamos por compatibilidad
         'Content-Length: ' . strlen($fileContent)
     ]);
     
@@ -135,9 +141,11 @@ function uploadToSupabase($file, $filename = null) {
     curl_close($ch);
     
     if ($httpCode === 200 || $httpCode === 201) {
-        return ['success' => SUPABASE_STORAGE_URL . $filename];
+        // La URL pública es la misma, pero con /object/public/
+        $publicUrl = SUPABASE_STORAGE_URL . $filename;
+        return ['success' => $publicUrl];
     } else {
-        return ['error' => 'Error al subir a Supabase Storage. Código: ' . $httpCode . ' - ' . $response];
+        return ['error' => "Error al subir a Supabase Storage. Código: $httpCode - " . substr($response, 0, 200)];
     }
 }
 ?>
