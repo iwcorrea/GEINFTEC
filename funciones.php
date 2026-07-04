@@ -117,7 +117,6 @@ function uploadToSupabase($file, $filename = null) {
         return ['error' => 'No se pudo leer el archivo.'];
     }
     
-    // Endpoint correcto para subir: /storage/v1/object/{bucket}/{filename}
     $url = SUPABASE_URL . '/storage/v1/object/' . SUPABASE_BUCKET . '/' . $filename;
     
     $ch = curl_init($url);
@@ -151,9 +150,9 @@ function uploadToSupabase($file, $filename = null) {
     }
 }
 
-// --- Listar imágenes del bucket ---
+// --- Listar imágenes del bucket (CORREGIDO) ---
 function listImagesFromBucket() {
-    $url = SUPABASE_URL . '/storage/v1/object/list/' . SUPABASE_BUCKET;
+    $url = SUPABASE_URL . '/storage/v1/object/list/' . SUPABASE_BUCKET . '/';
     
     $ch = curl_init($url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -165,11 +164,16 @@ function listImagesFromBucket() {
     $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
     curl_close($ch);
     
+    // Depuración: registrar en logs de Render
+    error_log("Supabase list URL: " . $url);
+    error_log("Supabase list response: " . substr($response, 0, 500));
+    
     if ($httpCode === 200) {
         $files = json_decode($response, true);
-        if (is_array($files)) {
+        if (is_array($files) && count($files) > 0) {
             $images = [];
             foreach ($files as $file) {
+                // A veces la respuesta es un array de objetos con 'name'
                 if (isset($file['name'])) {
                     $images[] = [
                         'name' => $file['name'],

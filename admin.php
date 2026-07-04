@@ -11,13 +11,21 @@ if (!isset($_SESSION['admin_logged']) || $_SESSION['admin_logged'] !== true) {
 $mensaje = '';
 $error = '';
 
-// Procesar acciones vía AJAX (sin recargar)
+// Procesar acciones vía AJAX
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     header('Content-Type: application/json');
     if (!verifyCSRFToken($_POST['csrf_token'] ?? '')) {
         echo json_encode(['success' => false, 'error' => 'Error de seguridad.']);
         exit;
     }
+    
+    // Acción para obtener lista de imágenes (AJAX)
+    if ($_POST['action'] === 'get_images') {
+        $imagenes = listImagesFromBucket();
+        echo json_encode(['success' => true, 'images' => $imagenes]);
+        exit;
+    }
+    
     if ($_POST['action'] === 'update') {
         $seccion = $_POST['seccion'] ?? '';
         $clave = $_POST['clave'] ?? '';
@@ -55,40 +63,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
 }
 
 $contenido = getAllContent();
-$imagenes = listImagesFromBucket();
 $csrf_token = generateCSRFToken();
 
-// ============================================================
-// MEJORA: Filtrar solo las claves de imágenes de items (itemX_img)
-// ============================================================
-function filtrarClaves($campos, $seccion) {
-    if ($seccion === 'proyectos' || $seccion === 'equipo') {
-        // Solo mantener claves que empiecen con 'item' y terminen con '_img'
-        $filtradas = [];
-        foreach ($campos as $clave => $valor) {
-            if (preg_match('/^item\d+_img$/', $clave)) {
-                $filtradas[$clave] = $valor;
-            }
-        }
-        // También mantener otras claves que no sean imágenes (como títulos, descripciones)
-        foreach ($campos as $clave => $valor) {
-            if (!preg_match('/^item\d+_img$/', $clave) && strpos($clave, 'img') === false && strpos($clave, 'imagen') === false && strpos($clave, 'foto') === false) {
-                $filtradas[$clave] = $valor;
-            }
-        }
-        return $filtradas;
-    }
-    return $campos;
+// Ocultar duplicados en equipo y proyectos
+$duplicados_equipo = ['img1', 'img2', 'img3', 'img4', 'miembro1_imagen', 'miembro2_imagen', 'miembro3_imagen', 'miembro4_imagen'];
+$duplicados_proyectos = ['img1', 'img2', 'img3'];
+
+if (isset($contenido['equipo'])) {
+    $contenido['equipo'] = array_filter($contenido['equipo'], function($clave) use ($duplicados_equipo) {
+        return !in_array($clave, $duplicados_equipo);
+    }, ARRAY_FILTER_USE_KEY);
 }
 
-foreach ($contenido as $seccion => &$campos) {
-    $campos = filtrarClaves($campos, $seccion);
+if (isset($contenido['proyectos'])) {
+    $contenido['proyectos'] = array_filter($contenido['proyectos'], function($clave) use ($duplicados_proyectos) {
+        return !in_array($clave, $duplicados_proyectos);
+    }, ARRAY_FILTER_USE_KEY);
 }
-unset($campos);
 
-// ============================================================
-// MEJORA: Ordenar campos para que las imágenes aparezcan primero
-// ============================================================
+// Ordenar campos: imágenes primero
 function ordenarCampos($campos) {
     $imagenes = [];
     $otros = [];
@@ -161,6 +154,7 @@ $primeraSeccion = $secciones[0] ?? 'hero';
         .modal-item img { width: 100%; height: 120px; object-fit: cover; border-radius: 6px; }
         .modal-item .name { font-size: 0.7rem; color: #b0b8d1; margin-top: 0.3rem; word-break: break-all; }
         .modal-close { float: right; background: none; border: none; color: #fff; font-size: 1.5rem; cursor: pointer; }
+        .modal-loading { text-align: center; padding: 2rem; color: #b0b8d1; }
         .mensaje { padding: 0.8rem 1.2rem; border-radius: 8px; margin-bottom: 1rem; font-weight: 600; }
         .mensaje.success { background: rgba(0,245,212,0.15); color: #00f5d4; border: 1px solid #00f5d4; }
         .mensaje.error { background: rgba(255,107,107,0.15); color: #ff6b6b; border: 1px solid #ff6b6b; }
@@ -291,21 +285,7 @@ $primeraSeccion = $secciones[0] ?? 'hero';
         </div>
         <p style="color:#b0b8d1; margin-bottom:1rem;">Haz clic en una imagen para usarla en este campo.</p>
         <div class="modal-grid" id="imageGrid">
-            <?php if (empty($imagenes)): ?>
-                <p style="color:#b0b8d1; grid-column: 1/-1; text-align:center; padding:2rem;">
-                    No hay imágenes subidas aún. 
-                    <br>Sube una imagen usando el botón "Subir nueva" en cualquier campo de imagen.
-                    <br><br>
-                    <span style="font-size:0.8rem; color:#666;">Si ya subiste imágenes y no aparecen, verifica que el bucket de Supabase esté configurado correctamente.</span>
-                </p>
-            <?php else: ?>
-                <?php foreach ($imagenes as $img): ?>
-                    <div class="modal-item" onclick="selectImage('<?php echo htmlspecialchars($img['url']); ?>')">
-                        <img src="<?php echo htmlspecialchars($img['url']); ?>" alt="<?php echo htmlspecialchars($img['name']); ?>">
-                        <div class="name"><?php echo htmlspecialchars($img['name']); ?></div>
-                    </div>
-                <?php endforeach; ?>
-            <?php endif; ?>
+            <div class="modal-loading">Cargando imágenes...</div>
         </div>
     </div>
 </div>
@@ -414,7 +394,7 @@ $primeraSeccion = $secciones[0] ?? 'hero';
     }
 
     // ============================================================
-    // 4. SELECTOR DE IMÁGENES (MODAL)
+    // 4. SELECTOR DE IMÁGENES (MODAL) con AJAX
     // ============================================================
     let currentSeccion = '';
     let currentClave = '';
@@ -423,10 +403,58 @@ $primeraSeccion = $secciones[0] ?? 'hero';
         currentSeccion = seccion;
         currentClave = clave;
         document.getElementById('imageModal').classList.add('active');
+        // Cargar imágenes al abrir el modal
+        loadImages();
     }
 
     function closeImageSelector() {
         document.getElementById('imageModal').classList.remove('active');
+    }
+
+    function loadImages() {
+        const grid = document.getElementById('imageGrid');
+        grid.innerHTML = '<div class="modal-loading">Cargando imágenes...</div>';
+        
+        const formData = new FormData();
+        formData.append('action', 'get_images');
+        formData.append('csrf_token', '<?php echo htmlspecialchars($csrf_token); ?>');
+
+        fetch('admin.php', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success && data.images && data.images.length > 0) {
+                let html = '';
+                data.images.forEach(img => {
+                    html += `
+                        <div class="modal-item" onclick="selectImage('${escapeHtml(img.url)}')">
+                            <img src="${escapeHtml(img.url)}" alt="${escapeHtml(img.name)}">
+                            <div class="name">${escapeHtml(img.name)}</div>
+                        </div>
+                    `;
+                });
+                grid.innerHTML = html;
+            } else {
+                grid.innerHTML = `
+                    <p style="color:#b0b8d1; grid-column: 1/-1; text-align:center; padding:2rem;">
+                        No hay imágenes subidas aún. 
+                        <br>Sube una imagen usando el botón "Subir nueva" en cualquier campo de imagen.
+                        <br><br>
+                        <span style="font-size:0.8rem; color:#666;">Si ya subiste imágenes y no aparecen, verifica que el bucket de Supabase esté configurado correctamente.</span>
+                    </p>
+                `;
+            }
+        })
+        .catch(error => {
+            grid.innerHTML = `<p style="color:#ff6b6b; text-align:center; padding:2rem;">Error al cargar imágenes: ${error.message}</p>`;
+            console.error('Error:', error);
+        });
+    }
+
+    function escapeHtml(str) {
+        return str.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     }
 
     function selectImage(url) {
@@ -450,7 +478,8 @@ $primeraSeccion = $secciones[0] ?? 'hero';
     }
 
     function refreshImages() {
-        window.location.reload();
+        loadImages();
+        mostrarMensaje('🔄 Imágenes actualizadas.', 'success');
     }
 
     document.getElementById('imageModal').addEventListener('click', function(e) {
