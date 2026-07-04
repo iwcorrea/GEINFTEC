@@ -89,9 +89,8 @@ function registerLoginAttempt($ip, $success) {
     }
 }
 
-// --- Subida a Supabase Storage (FINAL CORREGIDO) ---
+// --- Subida a Supabase Storage ---
 function uploadToSupabase($file, $filename = null) {
-    // Validar archivo
     if ($file['error'] !== UPLOAD_ERR_OK) {
         return ['error' => 'Error al subir el archivo: ' . $file['error']];
     }
@@ -100,7 +99,6 @@ function uploadToSupabase($file, $filename = null) {
         return ['error' => 'El archivo excede el tamaño máximo permitido (5 MB).'];
     }
     
-    // Validar tipo MIME real
     $finfo = finfo_open(FILEINFO_MIME_TYPE);
     $mimeType = finfo_file($finfo, $file['tmp_name']);
     finfo_close($finfo);
@@ -110,7 +108,6 @@ function uploadToSupabase($file, $filename = null) {
         return ['error' => 'Formato de imagen no permitido. Usa JPG, PNG, GIF o WEBP.'];
     }
     
-    // Generar nombre único y seguro
     $ext = pathinfo($file['name'], PATHINFO_EXTENSION);
     $filename = $filename ?: uniqid() . '.' . $ext;
     $filename = preg_replace('/[^a-zA-Z0-9_.-]/', '_', $filename);
@@ -120,7 +117,7 @@ function uploadToSupabase($file, $filename = null) {
         return ['error' => 'No se pudo leer el archivo.'];
     }
     
-    // --- ENDPOINT CORRECTO: /storage/v1/object/{bucket}/{filename} (POST) ---
+    // Endpoint correcto para subir: /storage/v1/object/{bucket}/{filename}
     $url = SUPABASE_URL . '/storage/v1/object/' . SUPABASE_BUCKET . '/' . $filename;
     
     $ch = curl_init($url);
@@ -131,7 +128,7 @@ function uploadToSupabase($file, $filename = null) {
         'Content-Type: ' . $mimeType,
         'apikey: ' . SUPABASE_ANON_KEY,
         'Authorization: Bearer ' . SUPABASE_ANON_KEY,
-        'x-upsert: true' // Permite sobrescribir si existe (opcional)
+        'x-upsert: true' // Permite sobrescribir si el archivo ya existe
     ]);
     
     $response = curl_exec($ch);
@@ -139,11 +136,9 @@ function uploadToSupabase($file, $filename = null) {
     $curlError = curl_error($ch);
     curl_close($ch);
     
-    // Log para depuración
     error_log("Supabase upload URL: " . $url);
     
     if ($httpCode === 200 || $httpCode === 201) {
-        // La URL pública SÍ lleva "/public/"
         $publicUrl = SUPABASE_STORAGE_URL . $filename;
         return ['success' => $publicUrl];
     } else {
@@ -156,5 +151,38 @@ function uploadToSupabase($file, $filename = null) {
         error_log("Supabase upload error: " . $errorMsg);
         return ['error' => $errorMsg];
     }
+}
+
+// --- Nueva función: listar imágenes del bucket ---
+function listImagesFromBucket() {
+    // Endpoint para listar objetos: /storage/v1/object/list/{bucket}
+    $url = SUPABASE_URL . '/storage/v1/object/list/' . SUPABASE_BUCKET;
+    
+    $ch = curl_init($url);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, [
+        'apikey: ' . SUPABASE_ANON_KEY,
+        'Authorization: Bearer ' . SUPABASE_ANON_KEY
+    ]);
+    $response = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+    
+    if ($httpCode === 200) {
+        $files = json_decode($response, true);
+        if (is_array($files)) {
+            $images = [];
+            foreach ($files as $file) {
+                if (isset($file['name'])) {
+                    $images[] = [
+                        'name' => $file['name'],
+                        'url' => SUPABASE_STORAGE_URL . $file['name']
+                    ];
+                }
+            }
+            return $images;
+        }
+    }
+    return [];
 }
 ?>
