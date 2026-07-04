@@ -11,11 +11,10 @@ $hero_subtitulo = getContent('hero', 'subtitulo', 'Ingeniería, construcción y 
 $hero_frases = getContent('hero', 'frases', '["Ingeniería de vanguardia","Construcción inteligente","Software que transforma"]');
 $hero_frases_array = json_decode($hero_frases, true) ?: ["Ingeniería de vanguardia","Construcción inteligente","Software que transforma"];
 
-// --- Servicios (títulos y subtítulos) ---
+// --- Servicios ---
 $servicios_titulo = getContent('servicios', 'titulo', 'Nuestros');
 $servicios_sub = getContent('servicios', 'subtitulo', 'Soluciones integrales que combinan ingeniería de calidad con tecnología de punta.');
 
-// --- Servicios (6 items) ---
 $servicios_items = [];
 for ($i = 1; $i <= 6; $i++) {
     $servicios_items[] = [
@@ -25,11 +24,10 @@ for ($i = 1; $i <= 6; $i++) {
     ];
 }
 
-// --- Proyectos (títulos y subtítulos) ---
+// --- Proyectos ---
 $proyectos_titulo = getContent('proyectos', 'titulo', 'Proyectos');
 $proyectos_sub = getContent('proyectos', 'subtitulo', 'Obras y soluciones que reflejan nuestra excelencia y compromiso.');
 
-// --- Proyectos (3 items) ---
 $proyectos_items = [];
 for ($i = 1; $i <= 3; $i++) {
     $proyectos_items[] = [
@@ -39,11 +37,24 @@ for ($i = 1; $i <= 3; $i++) {
     ];
 }
 
-// --- Tecnologías ---
+// --- Tecnologías (con iconos personalizados) ---
 $tecnologias_titulo = getContent('tecnologias', 'titulo', 'Tecnologías');
 $tecnologias_sub = getContent('tecnologias', 'subtitulo', 'Herramientas y plataformas con las que trabajamos día a día.');
-$tecnologias_lista = getContent('tecnologias', 'lista', '["React","Node.js","Python","AWS","Docker","PostgreSQL","Flutter","TypeScript"]');
-$tecnologias_array = json_decode($tecnologias_lista, true) ?: ["React","Node.js","Python","AWS","Docker","PostgreSQL","Flutter","TypeScript"];
+$tecnologias_lista = getContent('tecnologias', 'lista', '{"React":"⚛️","Node.js":"🟢","Python":"🐍","AWS":"☁️","Docker":"🐳","PostgreSQL":"🗄️","Flutter":"📱","TypeScript":"🔷"}');
+$tecnologias_array = json_decode($tecnologias_lista, true);
+if (!is_array($tecnologias_array) || empty($tecnologias_array)) {
+    // Fallback: lista simple si no es JSON
+    $tecnologias_array = [
+        'React' => '⚛️',
+        'Node.js' => '🟢',
+        'Python' => '🐍',
+        'AWS' => '☁️',
+        'Docker' => '🐳',
+        'PostgreSQL' => '🗄️',
+        'Flutter' => '📱',
+        'TypeScript' => '🔷'
+    ];
+}
 
 // --- Estadísticas ---
 $estadisticas_titulo = getContent('estadisticas', 'titulo', 'En');
@@ -59,11 +70,10 @@ foreach ($stats as &$stat) {
 }
 unset($stat);
 
-// --- Equipo (títulos y subtítulos) ---
+// --- Equipo ---
 $equipo_titulo = getContent('equipo', 'titulo', 'Nuestro');
 $equipo_sub = getContent('equipo', 'subtitulo', 'Profesionales apasionados por la innovación y la excelencia.');
 
-// --- Equipo (4 items) ---
 $equipo_items = [];
 for ($i = 1; $i <= 4; $i++) {
     $equipo_items[] = [
@@ -187,8 +197,8 @@ $footer_copyright = getContent('footer', 'copyright', '&copy; 2026 GEINFTEC S.A.
             <h2 class="section-title fade-up"><?php echo $tecnologias_titulo; ?> <span>que impulsamos</span></h2>
             <p class="section-sub fade-up"><?php echo $tecnologias_sub; ?></p>
             <div class="tech-grid fade-up">
-                <?php foreach ($tecnologias_array as $tech): ?>
-                <div class="tech-item"><span class="icon">⚛️</span> <?php echo $tech; ?></div>
+                <?php foreach ($tecnologias_array as $nombre => $icono): ?>
+                <div class="tech-item"><span class="icon"><?php echo $icono; ?></span> <?php echo $nombre; ?></div>
                 <?php endforeach; ?>
             </div>
         </div>

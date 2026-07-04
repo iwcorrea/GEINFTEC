@@ -128,15 +128,13 @@ function uploadToSupabase($file, $filename = null) {
         'Content-Type: ' . $mimeType,
         'apikey: ' . SUPABASE_ANON_KEY,
         'Authorization: Bearer ' . SUPABASE_ANON_KEY,
-        'x-upsert: true' // Permite sobrescribir si el archivo ya existe
+        'x-upsert: true'
     ]);
     
     $response = curl_exec($ch);
     $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
     $curlError = curl_error($ch);
     curl_close($ch);
-    
-    error_log("Supabase upload URL: " . $url);
     
     if ($httpCode === 200 || $httpCode === 201) {
         $publicUrl = SUPABASE_STORAGE_URL . $filename;
@@ -153,9 +151,8 @@ function uploadToSupabase($file, $filename = null) {
     }
 }
 
-// --- Nueva función: listar imágenes del bucket ---
+// --- Listar imágenes del bucket ---
 function listImagesFromBucket() {
-    // Endpoint para listar objetos: /storage/v1/object/list/{bucket}
     $url = SUPABASE_URL . '/storage/v1/object/list/' . SUPABASE_BUCKET;
     
     $ch = curl_init($url);

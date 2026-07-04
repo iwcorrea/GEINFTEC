@@ -58,11 +58,19 @@ $contenido = getAllContent();
 $imagenes = listImagesFromBucket();
 $csrf_token = generateCSRFToken();
 
-// Ocultar claves duplicadas en sección 'equipo' (mostrar solo itemX_img)
-$duplicados = ['img1', 'img2', 'img3', 'img4', 'miembro1_imagen', 'miembro2_imagen', 'miembro3_imagen', 'miembro4_imagen'];
+// Ocultar claves duplicadas en secciones 'equipo' y 'proyectos'
+$duplicados_equipo = ['img1', 'img2', 'img3', 'img4', 'miembro1_imagen', 'miembro2_imagen', 'miembro3_imagen', 'miembro4_imagen'];
+$duplicados_proyectos = ['img1', 'img2', 'img3'];
+
 if (isset($contenido['equipo'])) {
-    $contenido['equipo'] = array_filter($contenido['equipo'], function($clave) use ($duplicados) {
-        return !in_array($clave, $duplicados);
+    $contenido['equipo'] = array_filter($contenido['equipo'], function($clave) use ($duplicados_equipo) {
+        return !in_array($clave, $duplicados_equipo);
+    }, ARRAY_FILTER_USE_KEY);
+}
+
+if (isset($contenido['proyectos'])) {
+    $contenido['proyectos'] = array_filter($contenido['proyectos'], function($clave) use ($duplicados_proyectos) {
+        return !in_array($clave, $duplicados_proyectos);
     }, ARRAY_FILTER_USE_KEY);
 }
 
@@ -258,7 +266,6 @@ $primeraSeccion = $secciones[0] ?? 'hero';
                 tc.classList.remove('active');
             }
         });
-        // Evento de clic en tabs
         document.querySelectorAll('.tab').forEach(tab => {
             tab.addEventListener('click', function() {
                 const seccion = this.dataset.tab;
@@ -296,13 +303,11 @@ $primeraSeccion = $secciones[0] ?? 'hero';
                 if (data.success) {
                     statusDiv.textContent = '✅ ' + data.message;
                     statusDiv.style.color = '#00f5d4';
-                    // Si es subida de imagen, actualizar preview
                     if (action === 'upload_image' && data.url) {
                         const preview = campo.querySelector('.preview-img');
                         if (preview) {
                             preview.src = data.url;
                         } else {
-                            // Crear preview si no existe
                             const container = campo.querySelector('.img-container');
                             const img = document.createElement('img');
                             img.src = data.url;
@@ -310,13 +315,11 @@ $primeraSeccion = $secciones[0] ?? 'hero';
                             img.className = 'preview-img';
                             container.insertBefore(img, container.querySelector('div'));
                         }
-                        // Actualizar input de URL
                         const urlInput = campo.querySelector('input[name="valor"]');
                         if (urlInput) {
                             urlInput.value = data.url;
                         }
                     }
-                    // Mostrar mensaje global
                     mostrarMensaje('✅ ' + data.message, 'success');
                 } else {
                     statusDiv.textContent = '❌ ' + data.error;
@@ -334,13 +337,12 @@ $primeraSeccion = $secciones[0] ?? 'hero';
     });
 
     // ============================================================
-    // 3. MENSAJE GLOBAL (aparece arriba)
+    // 3. MENSAJE GLOBAL
     // ============================================================
     function mostrarMensaje(texto, tipo) {
         const msg = document.getElementById('mensajeGlobal');
         msg.textContent = texto;
         msg.className = 'mensaje show ' + tipo;
-        // Ocultar después de 5 segundos
         if (window.timeoutMensaje) clearTimeout(window.timeoutMensaje);
         window.timeoutMensaje = setTimeout(() => {
             msg.classList.remove('show');
@@ -365,7 +367,6 @@ $primeraSeccion = $secciones[0] ?? 'hero';
 
     function selectImage(url) {
         closeImageSelector();
-        // Encontrar el campo correspondiente y actualizar su input URL
         const campos = document.querySelectorAll('.campo');
         for (let campo of campos) {
             const label = campo.querySelector('label');
@@ -373,12 +374,10 @@ $primeraSeccion = $secciones[0] ?? 'hero';
                 const input = campo.querySelector('input[name="valor"]');
                 if (input) {
                     input.value = url;
-                    // Actualizar preview
                     const preview = campo.querySelector('.preview-img');
                     if (preview) {
                         preview.src = url;
                     }
-                    // Mostrar mensaje
                     mostrarMensaje('✅ Imagen seleccionada. Haz clic en "Actualizar URL" para guardar.', 'success');
                 }
                 break;
@@ -386,7 +385,6 @@ $primeraSeccion = $secciones[0] ?? 'hero';
         }
     }
 
-    // Cerrar modal al hacer clic fuera del contenido
     document.getElementById('imageModal').addEventListener('click', function(e) {
         if (e.target === this) {
             closeImageSelector();
