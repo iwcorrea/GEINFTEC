@@ -2,7 +2,7 @@
 // ============================================================
 // CONFIGURACIÓN DE CSP (desde PHP)
 // ============================================================
-header("Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https: data:; style-src 'self' 'unsafe-inline' https:; img-src 'self' data: https:; font-src 'self' data: https:; connect-src 'self' https:; frame-src 'self' https://www.google.com https://www.google.com/maps;");
+header("Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https: data:; style-src 'self' 'unsafe-inline' https:; img-src 'self' data: https:; font-src 'self' data: https:; connect-src 'self' https:;");
 
 // ============================================================
 // INCLUIR FUNCIONES Y OBTENER DATOS
@@ -41,11 +41,17 @@ for ($i = 1; $i <= 3; $i++) {
     ];
 }
 
-// --- Tecnologías ---
+// --- Tecnologías (con iconos personalizados) ---
 $tecnologias_titulo = getContent('tecnologias', 'titulo', 'Tecnologías');
 $tecnologias_sub = getContent('tecnologias', 'subtitulo', 'Herramientas y plataformas con las que trabajamos día a día.');
+
+// Obtener el JSON de tecnologías (formato: {"React":"⚛️","Node.js":"🟢",...})
 $tecnologias_lista = getContent('tecnologias', 'lista', '{"React":"⚛️","Node.js":"🟢","Python":"🐍","AWS":"☁️","Docker":"🐳","PostgreSQL":"🗄️","Flutter":"📱","TypeScript":"🔷"}');
+
+// Decodificar JSON
 $tecnologias_array = json_decode($tecnologias_lista, true);
+
+// Si el JSON no es válido o está vacío, usar valores por defecto
 if (!is_array($tecnologias_array) || empty($tecnologias_array)) {
     $tecnologias_array = [
         'React' => '⚛️',
@@ -94,7 +100,6 @@ $contacto_direccion = getContent('contacto', 'direccion', 'Bogotá, Colombia');
 $contacto_telefono = getContent('contacto', 'telefono', '+57 300 123 4567');
 $contacto_email = getContent('contacto', 'email', 'contacto@geinftec.com');
 $contacto_horario = getContent('contacto', 'horario', 'Lun – Vie: 8:00 am – 6:00 pm');
-// Asegurarnos de que la URL del mapa sea la correcta
 $contacto_mapa = getContent('contacto', 'mapa_embed', 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3976.785140536432!2d-74.08373268519861!3d4.624548343699416!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8e3f9a3f5c1b2e6b%3A0x5f7b6c8a0a2b9c0d!2sBogot%C3%A1!5e0!3m2!1ses!2sco!4v1650000000000!5m2!1ses!2sco');
 
 // --- Redes Sociales ---
@@ -113,7 +118,6 @@ $footer_copyright = getContent('footer', 'copyright', '&copy; 2026 GEINFTEC S.A.
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>GEINFTEC S.A.S. – Ingeniería, Construcción y Desarrollo de Software</title>
-    <!-- CSP ahora también permite frame-src para Google Maps -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
@@ -196,14 +200,17 @@ $footer_copyright = getContent('footer', 'copyright', '&copy; 2026 GEINFTEC S.A.
         </div>
     </section>
 
-    <!-- TECNOLOGÍAS -->
+    <!-- TECNOLOGÍAS (CORREGIDO) -->
     <section id="tecnologias">
         <div class="container">
             <h2 class="section-title fade-up"><?php echo $tecnologias_titulo; ?> <span>que impulsamos</span></h2>
             <p class="section-sub fade-up"><?php echo $tecnologias_sub; ?></p>
             <div class="tech-grid fade-up">
                 <?php foreach ($tecnologias_array as $nombre => $icono): ?>
-                <div class="tech-item"><span class="icon"><?php echo $icono; ?></span> <?php echo $nombre; ?></div>
+                <div class="tech-item">
+                    <span class="icon"><?php echo $icono; ?></span>
+                    <?php echo $nombre; ?>
+                </div>
                 <?php endforeach; ?>
             </div>
         </div>
@@ -265,7 +272,7 @@ $footer_copyright = getContent('footer', 'copyright', '&copy; 2026 GEINFTEC S.A.
                     <div class="item"><span class="icon">✉️</span> <?php echo $contacto_email; ?></div>
                     <div class="item"><span class="icon">🕒</span> <?php echo $contacto_horario; ?></div>
                     <div class="map-container">
-                        <iframe src="<?php echo $contacto_mapa; ?>" allowfullscreen loading="lazy" title="Ubicación de GEINFTEC en Bogotá"></iframe>
+                        <iframe src="<?php echo $contacto_mapa; ?>" allowfullscreen loading="lazy"></iframe>
                     </div>
                 </div>
             </div>
