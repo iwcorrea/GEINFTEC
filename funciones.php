@@ -117,7 +117,6 @@ function uploadToSupabase($file, $filename = null) {
         return ['error' => 'No se pudo leer el archivo.'];
     }
     
-    // Endpoint correcto para subir: /storage/v1/object/{bucket}/{filename}
     $url = SUPABASE_URL . '/storage/v1/object/' . SUPABASE_BUCKET . '/' . $filename;
     
     $ch = curl_init($url);
@@ -135,6 +134,8 @@ function uploadToSupabase($file, $filename = null) {
     $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
     $curlError = curl_error($ch);
     curl_close($ch);
+    
+    error_log("Supabase upload URL: " . $url);
     
     if ($httpCode === 200 || $httpCode === 201) {
         $publicUrl = SUPABASE_STORAGE_URL . $filename;
