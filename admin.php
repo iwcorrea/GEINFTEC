@@ -11,48 +11,61 @@ if (!isset($_SESSION['admin_logged']) || $_SESSION['admin_logged'] !== true) {
 $mensaje = '';
 $error = '';
 
+// Procesar acciones vía AJAX (sin recargar)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
+    header('Content-Type: application/json');
     if (!verifyCSRFToken($_POST['csrf_token'] ?? '')) {
-        $error = 'Error de seguridad. Intenta nuevamente.';
-    } else {
-        if ($_POST['action'] === 'update') {
-            $seccion = $_POST['seccion'] ?? '';
-            $clave = $_POST['clave'] ?? '';
-            $valor = $_POST['valor'] ?? '';
-            if ($seccion && $clave) {
-                if (updateContent($seccion, $clave, $valor)) {
-                    $mensaje = "✅ Dato actualizado correctamente.";
-                } else {
-                    $error = "❌ Error al actualizar.";
-                }
-            }
-        } elseif ($_POST['action'] === 'upload_image') {
-            $seccion = $_POST['seccion'] ?? '';
-            $clave = $_POST['clave'] ?? '';
-            if ($seccion && $clave && isset($_FILES['imagen']) && $_FILES['imagen']['error'] === UPLOAD_ERR_OK) {
-                $result = uploadToSupabase($_FILES['imagen']);
-                if (isset($result['error'])) {
-                    $error = "❌ " . $result['error'];
-                } else {
-                    $publicUrl = $result['success'];
-                    if (updateContent($seccion, $clave, $publicUrl)) {
-                        $mensaje = "✅ Imagen subida y guardada.";
-                    } else {
-                        $error = "❌ Error al guardar la URL.";
-                    }
-                }
+        echo json_encode(['success' => false, 'error' => 'Error de seguridad.']);
+        exit;
+    }
+    if ($_POST['action'] === 'update') {
+        $seccion = $_POST['seccion'] ?? '';
+        $clave = $_POST['clave'] ?? '';
+        $valor = $_POST['valor'] ?? '';
+        if ($seccion && $clave) {
+            if (updateContent($seccion, $clave, $valor)) {
+                echo json_encode(['success' => true, 'message' => '✅ Actualizado correctamente.']);
             } else {
-                $error = "❌ No se seleccionó ninguna imagen o hubo un error.";
+                echo json_encode(['success' => false, 'error' => '❌ Error al actualizar.']);
             }
+        } else {
+            echo json_encode(['success' => false, 'error' => '❌ Datos incompletos.']);
         }
+        exit;
+    } elseif ($_POST['action'] === 'upload_image') {
+        $seccion = $_POST['seccion'] ?? '';
+        $clave = $_POST['clave'] ?? '';
+        if ($seccion && $clave && isset($_FILES['imagen']) && $_FILES['imagen']['error'] === UPLOAD_ERR_OK) {
+            $result = uploadToSupabase($_FILES['imagen']);
+            if (isset($result['error'])) {
+                echo json_encode(['success' => false, 'error' => '❌ ' . $result['error']]);
+            } else {
+                $publicUrl = $result['success'];
+                if (updateContent($seccion, $clave, $publicUrl)) {
+                    echo json_encode(['success' => true, 'message' => '✅ Imagen subida y guardada.', 'url' => $publicUrl]);
+                } else {
+                    echo json_encode(['success' => false, 'error' => '❌ Error al guardar la URL.']);
+                }
+            }
+        } else {
+            echo json_encode(['success' => false, 'error' => '❌ No se seleccionó ninguna imagen.']);
+        }
+        exit;
     }
 }
 
 $contenido = getAllContent();
-$imagenes = listImagesFromBucket(); // Lista de imágenes disponibles
+$imagenes = listImagesFromBucket();
 $csrf_token = generateCSRFToken();
 
-// Agrupar por sección (ya viene de getAllContent)
+// Ocultar claves duplicadas en sección 'equipo' (mostrar solo itemX_img)
+$duplicados = ['img1', 'img2', 'img3', 'img4', 'miembro1_imagen', 'miembro2_imagen', 'miembro3_imagen', 'miembro4_imagen'];
+if (isset($contenido['equipo'])) {
+    $contenido['equipo'] = array_filter($contenido['equipo'], function($clave) use ($duplicados) {
+        return !in_array($clave, $duplicados);
+    }, ARRAY_FILTER_USE_KEY);
+}
+
 $secciones = array_keys($contenido);
 $primeraSeccion = $secciones[0] ?? 'hero';
 ?>
@@ -95,6 +108,7 @@ $primeraSeccion = $secciones[0] ?? 'hero';
         .campo .acciones { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; margin-top: 0.5rem; }
         .campo .preview-img { max-width: 120px; max-height: 100px; border-radius: 8px; object-fit: cover; border: 1px solid #2a3a5e; margin: 0.5rem 0; }
         .campo .img-container { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+        .campo .status { font-size: 0.85rem; color: #b0b8d1; margin-top: 0.3rem; }
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center; }
         .modal.active { display: flex; }
         .modal-content { background: #1c2541; padding: 2rem; border-radius: 16px; max-width: 800px; width: 90%; max-height: 80vh; overflow-y: auto; }
@@ -108,6 +122,8 @@ $primeraSeccion = $secciones[0] ?? 'hero';
         .mensaje { padding: 0.8rem 1.2rem; border-radius: 8px; margin-bottom: 1rem; font-weight: 600; }
         .mensaje.success { background: rgba(0,245,212,0.15); color: #00f5d4; border: 1px solid #00f5d4; }
         .mensaje.error { background: rgba(255,107,107,0.15); color: #ff6b6b; border: 1px solid #ff6b6b; }
+        .mensaje { display: none; }
+        .mensaje.show { display: block; }
         @media (max-width: 768px) {
             .campo label { min-width: 100%; }
             .header-admin { flex-direction: column; align-items: stretch; }
@@ -130,12 +146,7 @@ $primeraSeccion = $secciones[0] ?? 'hero';
     </div>
 
     <!-- Mensajes -->
-    <?php if ($mensaje): ?>
-        <div class="mensaje success"><?php echo htmlspecialchars($mensaje); ?></div>
-    <?php endif; ?>
-    <?php if ($error): ?>
-        <div class="mensaje error"><?php echo htmlspecialchars($error); ?></div>
-    <?php endif; ?>
+    <div id="mensajeGlobal" class="mensaje"></div>
 
     <!-- Tabs -->
     <div class="tabs" id="tabsContainer">
@@ -155,7 +166,7 @@ $primeraSeccion = $secciones[0] ?? 'hero';
                     <small><?php echo count($contenido[$seccion]); ?> campos</small>
                 </h2>
                 <?php foreach ($contenido[$seccion] as $clave => $valor): ?>
-                    <div class="campo">
+                    <div class="campo" data-seccion="<?php echo $seccion; ?>" data-clave="<?php echo $clave; ?>">
                         <label for="<?php echo $seccion.'_'.$clave; ?>"><?php echo htmlspecialchars($clave); ?></label>
                         <div class="valor">
                             <?php if (strpos($clave, 'imagen') !== false || strpos($clave, 'img') !== false || strpos($clave, 'foto') !== false): ?>
@@ -164,7 +175,7 @@ $primeraSeccion = $secciones[0] ?? 'hero';
                                         <img src="<?php echo htmlspecialchars($valor); ?>" alt="preview" class="preview-img">
                                     <?php endif; ?>
                                     <div>
-                                        <form method="post" enctype="multipart/form-data" style="display:inline;">
+                                        <form class="ajax-form" enctype="multipart/form-data" method="post" action="">
                                             <input type="hidden" name="action" value="upload_image">
                                             <input type="hidden" name="seccion" value="<?php echo htmlspecialchars($seccion); ?>">
                                             <input type="hidden" name="clave" value="<?php echo htmlspecialchars($clave); ?>">
@@ -175,7 +186,7 @@ $primeraSeccion = $secciones[0] ?? 'hero';
                                         <button type="button" class="btn btn-outline" onclick="openImageSelector('<?php echo $seccion; ?>', '<?php echo $clave; ?>')">Elegir existente</button>
                                     </div>
                                 </div>
-                                <form method="post" style="margin-top:0.5rem;">
+                                <form class="ajax-form" method="post" style="margin-top:0.5rem;">
                                     <input type="hidden" name="action" value="update">
                                     <input type="hidden" name="seccion" value="<?php echo htmlspecialchars($seccion); ?>">
                                     <input type="hidden" name="clave" value="<?php echo htmlspecialchars($clave); ?>">
@@ -184,7 +195,7 @@ $primeraSeccion = $secciones[0] ?? 'hero';
                                     <button type="submit" class="btn" style="margin-top:0.3rem;">Actualizar URL</button>
                                 </form>
                             <?php else: ?>
-                                <form method="post">
+                                <form class="ajax-form" method="post">
                                     <input type="hidden" name="action" value="update">
                                     <input type="hidden" name="seccion" value="<?php echo htmlspecialchars($seccion); ?>">
                                     <input type="hidden" name="clave" value="<?php echo htmlspecialchars($clave); ?>">
@@ -197,9 +208,7 @@ $primeraSeccion = $secciones[0] ?? 'hero';
                                     <button type="submit" class="btn" style="margin-top:0.3rem;">Actualizar</button>
                                 </form>
                             <?php endif; ?>
-                            <?php if ($valor && !empty($valor) && strlen($valor) < 100): ?>
-                                <div style="font-size:0.8rem; color:#b0b8d1; margin-top:0.3rem;">Valor: <?php echo htmlspecialchars(substr($valor, 0, 80)); ?></div>
-                            <?php endif; ?>
+                            <div class="status"></div>
                         </div>
                     </div>
                 <?php endforeach; ?>
@@ -230,18 +239,117 @@ $primeraSeccion = $secciones[0] ?? 'hero';
 </div>
 
 <script>
-    // Tabs
-    document.querySelectorAll('.tab').forEach(tab => {
-        tab.addEventListener('click', function() {
-            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            this.classList.add('active');
-            const seccion = this.dataset.tab;
-            document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
-            document.getElementById('tab-' + seccion).classList.add('active');
+    // ============================================================
+    // 1. PERSISTENCIA DE PESTAÑAS (sessionStorage)
+    // ============================================================
+    (function() {
+        const activeTab = sessionStorage.getItem('activeTab') || '<?php echo $primeraSeccion; ?>';
+        document.querySelectorAll('.tab').forEach(tab => {
+            if (tab.dataset.tab === activeTab) {
+                tab.classList.add('active');
+            } else {
+                tab.classList.remove('active');
+            }
+        });
+        document.querySelectorAll('.tab-content').forEach(tc => {
+            if (tc.id === 'tab-' + activeTab) {
+                tc.classList.add('active');
+            } else {
+                tc.classList.remove('active');
+            }
+        });
+        // Evento de clic en tabs
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                const seccion = this.dataset.tab;
+                sessionStorage.setItem('activeTab', seccion);
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+                document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
+                document.getElementById('tab-' + seccion).classList.add('active');
+            });
+        });
+    })();
+
+    // ============================================================
+    // 2. ENVÍO ASÍNCRONO (AJAX) DE FORMULARIOS
+    // ============================================================
+    document.querySelectorAll('.ajax-form').forEach(form => {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            const action = formData.get('action');
+            const seccion = formData.get('seccion');
+            const clave = formData.get('clave');
+            const campo = this.closest('.campo');
+            const statusDiv = campo.querySelector('.status');
+
+            statusDiv.textContent = '⏳ Procesando...';
+            statusDiv.style.color = '#b0b8d1';
+
+            fetch('admin.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    statusDiv.textContent = '✅ ' + data.message;
+                    statusDiv.style.color = '#00f5d4';
+                    // Si es subida de imagen, actualizar preview
+                    if (action === 'upload_image' && data.url) {
+                        const preview = campo.querySelector('.preview-img');
+                        if (preview) {
+                            preview.src = data.url;
+                        } else {
+                            // Crear preview si no existe
+                            const container = campo.querySelector('.img-container');
+                            const img = document.createElement('img');
+                            img.src = data.url;
+                            img.alt = 'preview';
+                            img.className = 'preview-img';
+                            container.insertBefore(img, container.querySelector('div'));
+                        }
+                        // Actualizar input de URL
+                        const urlInput = campo.querySelector('input[name="valor"]');
+                        if (urlInput) {
+                            urlInput.value = data.url;
+                        }
+                    }
+                    // Mostrar mensaje global
+                    mostrarMensaje('✅ ' + data.message, 'success');
+                } else {
+                    statusDiv.textContent = '❌ ' + data.error;
+                    statusDiv.style.color = '#ff6b6b';
+                    mostrarMensaje('❌ ' + data.error, 'error');
+                }
+            })
+            .catch(error => {
+                statusDiv.textContent = '❌ Error de conexión.';
+                statusDiv.style.color = '#ff6b6b';
+                mostrarMensaje('❌ Error de conexión.', 'error');
+                console.error('Error:', error);
+            });
         });
     });
 
-    // Modal de imágenes
+    // ============================================================
+    // 3. MENSAJE GLOBAL (aparece arriba)
+    // ============================================================
+    function mostrarMensaje(texto, tipo) {
+        const msg = document.getElementById('mensajeGlobal');
+        msg.textContent = texto;
+        msg.className = 'mensaje show ' + tipo;
+        // Ocultar después de 5 segundos
+        if (window.timeoutMensaje) clearTimeout(window.timeoutMensaje);
+        window.timeoutMensaje = setTimeout(() => {
+            msg.classList.remove('show');
+        }, 5000);
+    }
+
+    // ============================================================
+    // 4. SELECTOR DE IMÁGENES (MODAL)
+    // ============================================================
     let currentSeccion = '';
     let currentClave = '';
 
@@ -256,36 +364,26 @@ $primeraSeccion = $secciones[0] ?? 'hero';
     }
 
     function selectImage(url) {
-        // Cerrar modal
         closeImageSelector();
-        // Buscar el campo correspondiente y actualizar su valor
-        const seccion = currentSeccion;
-        const clave = currentClave;
-        // Encontrar el formulario de actualización de URL dentro del campo
+        // Encontrar el campo correspondiente y actualizar su input URL
         const campos = document.querySelectorAll('.campo');
         for (let campo of campos) {
             const label = campo.querySelector('label');
-            if (label && label.textContent.trim() === clave) {
-                // Buscar el input text de URL dentro de este campo
-                const input = campo.querySelector('input[type="text"][name="valor"]');
+            if (label && label.textContent.trim() === currentClave) {
+                const input = campo.querySelector('input[name="valor"]');
                 if (input) {
                     input.value = url;
-                    // Opcional: actualizar la vista previa
+                    // Actualizar preview
                     const preview = campo.querySelector('.preview-img');
                     if (preview) {
                         preview.src = url;
                     }
-                    // También podemos actualizar el texto de "Valor:"
-                    const valorDiv = campo.querySelector('.valor > div:last-child');
-                    if (valorDiv && valorDiv.style.color === 'rgb(176, 184, 209)') {
-                        valorDiv.textContent = 'Valor: ' + url.substring(0, 80);
-                    }
+                    // Mostrar mensaje
+                    mostrarMensaje('✅ Imagen seleccionada. Haz clic en "Actualizar URL" para guardar.', 'success');
                 }
                 break;
             }
         }
-        // También podríamos enviar automáticamente el formulario, pero mejor que el usuario haga clic en "Actualizar"
-        alert('Imagen seleccionada. Haz clic en "Actualizar URL" para guardar el cambio.');
     }
 
     // Cerrar modal al hacer clic fuera del contenido
