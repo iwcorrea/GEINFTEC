@@ -89,7 +89,7 @@ function registerLoginAttempt($ip, $success) {
     }
 }
 
-// --- Subida a Supabase Storage (CORREGIDA) ---
+// --- Subida a Supabase Storage (CORREGIDA con /upload/) ---
 function uploadToSupabase($file, $filename = null) {
     // Validar archivo
     if ($file['error'] !== UPLOAD_ERR_OK) {
@@ -118,11 +118,10 @@ function uploadToSupabase($file, $filename = null) {
         return ['error' => 'No se pudo leer el archivo.'];
     }
     
-    // --- ENDPOINT CORRECTO: SIN "/public/" en la URL de subida ---
-    // La URL debe ser: https://[TU-PROYECTO].supabase.co/storage/v1/object/[BUCKET]/[ARCHIVO]
-    $url = SUPABASE_URL . '/storage/v1/object/' . SUPABASE_BUCKET . '/' . $filename;
+    // --- NUEVO ENDPOINT: /upload/ en lugar de /object/ ---
+    $url = SUPABASE_URL . '/storage/v1/upload/' . SUPABASE_BUCKET . '/' . $filename;
     
-    // Agregar la API Key como query param como respaldo
+    // Agregar la API Key como query param por si acaso
     $url .= '?apikey=' . urlencode(SUPABASE_ANON_KEY);
     
     $ch = curl_init($url);
@@ -141,7 +140,8 @@ function uploadToSupabase($file, $filename = null) {
     $curlError = curl_error($ch);
     curl_close($ch);
     
-    // Depuración: Registra el error detallado en los logs de Render
+    // Depuración: registra la URL y el error
+    error_log("Supabase upload URL: " . $url);
     if ($httpCode !== 200 && $httpCode !== 201) {
         $errorMsg = "Error al subir a Supabase Storage. Código: $httpCode";
         if ($curlError) {
@@ -153,7 +153,7 @@ function uploadToSupabase($file, $filename = null) {
         return ['error' => $errorMsg];
     }
     
-    // Si la subida fue exitosa, la URL pública SÍ lleva "/public/"
+    // La URL pública SÍ lleva "/public/"
     $publicUrl = SUPABASE_STORAGE_URL . $filename;
     return ['success' => $publicUrl];
 }
