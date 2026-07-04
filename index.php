@@ -1,117 +1,10 @@
-<?php
-// ============================================================
-// CONFIGURACIÓN DE ERRORES
-// ============================================================
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
-
-// ============================================================
-// INCLUIR FUNCIONES Y OBTENER DATOS
-// ============================================================
-require_once 'funciones.php';
-
-// --- Hero ---
-$hero_titulo = getContent('hero', 'titulo', 'Innovación que');
-$hero_subtitulo = getContent('hero', 'subtitulo', 'Ingeniería, construcción y desarrollo de software con visión de vanguardia. Transformamos ideas en realidades digitales y físicas.');
-$hero_frases = getContent('hero', 'frases', '["Ingeniería de vanguardia","Construcción inteligente","Software que transforma"]');
-$hero_frases_array = json_decode($hero_frases, true) ?: ["Ingeniería de vanguardia","Construcción inteligente","Software que transforma"];
-
-// --- Servicios ---
-$servicios_titulo = getContent('servicios', 'titulo', 'Nuestros');
-$servicios_sub = getContent('servicios', 'subtitulo', 'Soluciones integrales que combinan ingeniería de calidad con tecnología de punta.');
-$servicios_items = [];
-for ($i = 1; $i <= 6; $i++) {
-    $servicios_items[] = [
-        'icon' => getContent('servicios', "item{$i}_icon", ''),
-        'titulo' => getContent('servicios', "item{$i}_titulo", "Servicio {$i}"),
-        'desc' => getContent('servicios', "item{$i}_desc", 'Descripción del servicio.')
-    ];
-}
-
-// --- Proyectos ---
-$proyectos_titulo = getContent('proyectos', 'titulo', 'Proyectos');
-$proyectos_sub = getContent('proyectos', 'subtitulo', 'Obras y soluciones que reflejan nuestra excelencia y compromiso.');
-$proyectos_items = [];
-for ($i = 1; $i <= 3; $i++) {
-    $proyectos_items[] = [
-        'img' => getContent('proyectos', "item{$i}_img", 'https://images.unsplash.com/photo-1541888946425-d81bb19240f5?w=600&h=400&fit=crop'),
-        'titulo' => getContent('proyectos', "item{$i}_titulo", "Proyecto {$i}"),
-        'desc' => getContent('proyectos', "item{$i}_desc", 'Descripción del proyecto.')
-    ];
-}
-
-// --- Tecnologías ---
-$tecnologias_titulo = getContent('tecnologias', 'titulo', 'Tecnologías');
-$tecnologias_sub = getContent('tecnologias', 'subtitulo', 'Herramientas y plataformas con las que trabajamos día a día.');
-$tecnologias_raw = getContent('tecnologias', 'lista', '[{"icon":"⚛️","name":"React"},{"icon":"🟢","name":"Node.js"},{"icon":"🐍","name":"Python"},{"icon":"☁️","name":"AWS"},{"icon":"🐳","name":"Docker"},{"icon":"🗄️","name":"PostgreSQL"},{"icon":"📱","name":"Flutter"},{"icon":"🔷","name":"TypeScript"}]');
-$tecnologias_array = json_decode($tecnologias_raw, true);
-if (!is_array($tecnologias_array)) {
-    $tecnologias_array = [
-        ["icon" => "⚛️", "name" => "React"],
-        ["icon" => "🟢", "name" => "Node.js"],
-        ["icon" => "🐍", "name" => "Python"],
-        ["icon" => "☁️", "name" => "AWS"],
-        ["icon" => "🐳", "name" => "Docker"],
-        ["icon" => "🗄️", "name" => "PostgreSQL"],
-        ["icon" => "📱", "name" => "Flutter"],
-        ["icon" => "🔷", "name" => "TypeScript"]
-    ];
-}
-
-// --- Estadísticas ---
-$estadisticas_titulo = getContent('estadisticas', 'titulo', 'En');
-$estadisticas_sub = getContent('estadisticas', 'subtitulo', 'La confianza de nuestros clientes y el impacto de nuestros proyectos.');
-$stats = [
-    ['clave' => 'anos', 'label' => 'Años de experiencia', 'default' => 12],
-    ['clave' => 'proyectos', 'label' => 'Proyectos entregados', 'default' => 150],
-    ['clave' => 'clientes', 'label' => 'Clientes satisfechos', 'default' => 98],
-    ['clave' => 'satisfaccion', 'label' => '% Calidad garantizada', 'default' => 100]
-];
-foreach ($stats as &$stat) {
-    $stat['valor'] = getContent('estadisticas', $stat['clave'], $stat['default']);
-}
-unset($stat);
-
-// --- Equipo ---
-$equipo_titulo = getContent('equipo', 'titulo', 'Nuestro');
-$equipo_sub = getContent('equipo', 'subtitulo', 'Profesionales apasionados por la innovación y la excelencia.');
-$equipo_items = [];
-for ($i = 1; $i <= 4; $i++) {
-    $equipo_items[] = [
-        'img' => getContent('equipo', "item{$i}_img", 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=200&h=200&fit=crop&crop=face'),
-        'nombre' => getContent('equipo', "item{$i}_nombre", "Miembro {$i}"),
-        'cargo' => getContent('equipo', "item{$i}_cargo", 'Cargo'),
-        'bio' => getContent('equipo', "item{$i}_bio", 'Biografía del miembro.')
-    ];
-}
-
-// --- Contacto ---
-$contacto_titulo = getContent('contacto', 'titulo', 'Contáctanos');
-$contacto_sub = getContent('contacto', 'subtitulo', 'Estamos listos para hacer realidad tu próximo proyecto.');
-$contacto_direccion = getContent('contacto', 'direccion', 'Bogotá, Colombia');
-$contacto_telefono = getContent('contacto', 'telefono', '+57 300 123 4567');
-$contacto_email = getContent('contacto', 'email', 'contacto@geinftec.com');
-$contacto_horario = getContent('contacto', 'horario', 'Lun – Vie: 8:00 am – 6:00 pm');
-$contacto_mapa = getContent('contacto', 'mapa_embed', 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3976.785140536432!2d-74.08373268519861!3d4.624548343699416!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8e3f9a3f5c1b2e6b%3A0x5f7b6c8a0a2b9c0d!2sBogot%C3%A1!5e0!3m2!1ses!2sco!4v1650000000000!5m2!1ses!2sco');
-
-// --- Redes Sociales ---
-$social_linkedin = getContent('sociales', 'linkedin', '#');
-$social_twitter = getContent('sociales', 'twitter', '#');
-$social_instagram = getContent('sociales', 'instagram', '#');
-$social_youtube = getContent('sociales', 'youtube', '#');
-
-// --- Footer ---
-$footer_texto = getContent('footer', 'texto', 'Ingeniería, construcción y tecnología para un futuro sostenible e inteligente.');
-$footer_copyright = getContent('footer', 'copyright', '&copy; 2026 GEINFTEC S.A.S. Todos los derechos reservados. | Diseñado con 💙 en Colombia.');
-?>
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>GEINFTEC S.A.S. – Ingeniería, Construcción y Desarrollo de Software</title>
-    <!-- CSP que permite todo lo necesario -->
+    <title>GEINFTEC S.A.S.</title>
+    <!-- CSP que permite todo -->
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https:; style-src 'self' 'unsafe-inline' https:; img-src 'self' data: https:; font-src 'self' data: https:; connect-src 'self' https:;">
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -146,13 +39,13 @@ $footer_copyright = getContent('footer', 'copyright', '&copy; 2026 GEINFTEC S.A.
         <canvas id="hero-canvas"></canvas>
         <div class="container hero-content">
             <h1 class="hero-title">
-                <?php echo htmlspecialchars($hero_titulo); ?><br />
+                Innovación que<br />
                 <span class="highlight">construye el futuro</span>
             </h1>
             <div style="font-size: 2rem; font-weight: 600; margin-bottom: 0.5rem;">
-                <span id="rotating-text" data-phrases='<?php echo json_encode($hero_frases_array); ?>'></span>
+                <span id="rotating-text" data-phrases='["Ingeniería de vanguardia","Construcción inteligente","Software que transforma"]'></span>
             </div>
-            <p class="hero-sub"><?php echo htmlspecialchars($hero_subtitulo); ?></p>
+            <p class="hero-sub">Ingeniería, construcción y desarrollo de software con visión de vanguardia. Transformamos ideas en realidades digitales y físicas.</p>
             <a href="#contacto" class="btn">Contáctanos</a>
             <a href="#proyectos" class="btn btn-outline" style="margin-left: 1rem;">Ver proyectos</a>
         </div>
@@ -161,16 +54,39 @@ $footer_copyright = getContent('footer', 'copyright', '&copy; 2026 GEINFTEC S.A.
     <!-- SERVICIOS -->
     <section id="servicios">
         <div class="container">
-            <h2 class="section-title fade-up"><?php echo htmlspecialchars($servicios_titulo); ?> <span>Servicios</span></h2>
-            <p class="section-sub fade-up"><?php echo htmlspecialchars($servicios_sub); ?></p>
+            <h2 class="section-title fade-up">Nuestros <span>Servicios</span></h2>
+            <p class="section-sub fade-up">Soluciones integrales que combinan ingeniería de calidad con tecnología de punta.</p>
             <div class="grid-3">
-                <?php foreach ($servicios_items as $item): ?>
                 <div class="card service-card fade-up">
-                    <span class="icon"><?php echo htmlspecialchars($item['icon']); ?></span>
-                    <h3><?php echo htmlspecialchars($item['titulo']); ?></h3>
-                    <p><?php echo htmlspecialchars($item['desc']); ?></p>
+                    <span class="icon">🏗️</span>
+                    <h3>Ingeniería Civil</h3>
+                    <p>Diseño y construcción de infraestructura resistente y sostenible.</p>
                 </div>
-                <?php endforeach; ?>
+                <div class="card service-card fade-up">
+                    <span class="icon">💻</span>
+                    <h3>Desarrollo Software</h3>
+                    <p>Aplicaciones web, móviles y sistemas a la medida con arquitecturas modernas.</p>
+                </div>
+                <div class="card service-card fade-up">
+                    <span class="icon">🔧</span>
+                    <h3>Consultoría TI</h3>
+                    <p>Asesoramiento estratégico para transformación digital y optimización de procesos.</p>
+                </div>
+                <div class="card service-card fade-up">
+                    <span class="icon">📊</span>
+                    <h3>Data & Analytics</h3>
+                    <p>Inteligencia de negocio, dashboards y análisis predictivo para tomar mejores decisiones.</p>
+                </div>
+                <div class="card service-card fade-up">
+                    <span class="icon">🌐</span>
+                    <h3>Infraestructura Cloud</h3>
+                    <p>Migración y gestión de entornos en la nube con alta disponibilidad y seguridad.</p>
+                </div>
+                <div class="card service-card fade-up">
+                    <span class="icon">🔒</span>
+                    <h3>Ciberseguridad</h3>
+                    <p>Auditorías, protección de datos y cumplimiento normativo para tu empresa.</p>
+                </div>
             </div>
         </div>
     </section>
@@ -178,19 +94,33 @@ $footer_copyright = getContent('footer', 'copyright', '&copy; 2026 GEINFTEC S.A.
     <!-- PROYECTOS -->
     <section id="proyectos" style="background: rgba(0,0,0,0.2);">
         <div class="container">
-            <h2 class="section-title fade-up"><?php echo htmlspecialchars($proyectos_titulo); ?> <span>Destacados</span></h2>
-            <p class="section-sub fade-up"><?php echo htmlspecialchars($proyectos_sub); ?></p>
+            <h2 class="section-title fade-up">Proyectos <span>Destacados</span></h2>
+            <p class="section-sub fade-up">Obras y soluciones que reflejan nuestra excelencia y compromiso.</p>
             <div class="grid-3">
-                <?php foreach ($proyectos_items as $item): ?>
                 <div class="card project-card fade-up">
-                    <img src="<?php echo htmlspecialchars($item['img']); ?>" alt="<?php echo htmlspecialchars($item['titulo']); ?>" loading="lazy" />
+                    <img src="https://images.unsplash.com/photo-1541888946425-d81bb19240f5?w=600&h=400&fit=crop" alt="Construcción de puente" loading="lazy" />
                     <div class="content">
-                        <h3><?php echo htmlspecialchars($item['titulo']); ?></h3>
-                        <p><?php echo htmlspecialchars($item['desc']); ?></p>
+                        <h3>Puente Colgante Moderno</h3>
+                        <p>Diseño estructural y construcción de un puente peatonal con materiales compuestos.</p>
                         <a href="#" class="btn btn-outline" style="padding:0.4rem 1.2rem; font-size:0.9rem;">Ver más</a>
                     </div>
                 </div>
-                <?php endforeach; ?>
+                <div class="card project-card fade-up">
+                    <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=600&h=400&fit=crop" alt="Dashboard software" loading="lazy" />
+                    <div class="content">
+                        <h3>Plataforma de Gestión</h3>
+                        <p>Sistema ERP para empresas de construcción con módulos de inventario y finanzas.</p>
+                        <a href="#" class="btn btn-outline" style="padding:0.4rem 1.2rem; font-size:0.9rem;">Ver más</a>
+                    </div>
+                </div>
+                <div class="card project-card fade-up">
+                    <img src="https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=600&h=400&fit=crop" alt="Edificio inteligente" loading="lazy" />
+                    <div class="content">
+                        <h3>Edificio Inteligente</h3>
+                        <p>Automatización y control de iluminación, climatización y seguridad mediante IoT.</p>
+                        <a href="#" class="btn btn-outline" style="padding:0.4rem 1.2rem; font-size:0.9rem;">Ver más</a>
+                    </div>
+                </div>
             </div>
         </div>
     </section>
@@ -198,15 +128,17 @@ $footer_copyright = getContent('footer', 'copyright', '&copy; 2026 GEINFTEC S.A.
     <!-- TECNOLOGÍAS -->
     <section id="tecnologias">
         <div class="container">
-            <h2 class="section-title fade-up"><?php echo htmlspecialchars($tecnologias_titulo); ?> <span>que impulsamos</span></h2>
-            <p class="section-sub fade-up"><?php echo htmlspecialchars($tecnologias_sub); ?></p>
+            <h2 class="section-title fade-up">Tecnologías <span>que impulsamos</span></h2>
+            <p class="section-sub fade-up">Herramientas y plataformas con las que trabajamos día a día.</p>
             <div class="tech-grid fade-up">
-                <?php foreach ($tecnologias_array as $tech): ?>
-                <div class="tech-item">
-                    <span class="icon"><?php echo htmlspecialchars($tech['icon']); ?></span>
-                    <?php echo htmlspecialchars($tech['name']); ?>
-                </div>
-                <?php endforeach; ?>
+                <div class="tech-item"><span class="icon">⚛️</span> React</div>
+                <div class="tech-item"><span class="icon">🟢</span> Node.js</div>
+                <div class="tech-item"><span class="icon">🐍</span> Python</div>
+                <div class="tech-item"><span class="icon">☁️</span> AWS</div>
+                <div class="tech-item"><span class="icon">🐳</span> Docker</div>
+                <div class="tech-item"><span class="icon">🗄️</span> PostgreSQL</div>
+                <div class="tech-item"><span class="icon">📱</span> Flutter</div>
+                <div class="tech-item"><span class="icon">🔷</span> TypeScript</div>
             </div>
         </div>
     </section>
@@ -214,15 +146,25 @@ $footer_copyright = getContent('footer', 'copyright', '&copy; 2026 GEINFTEC S.A.
     <!-- ESTADÍSTICAS -->
     <section id="estadisticas" style="background: rgba(0,0,0,0.15);">
         <div class="container">
-            <h2 class="section-title fade-up"><?php echo htmlspecialchars($estadisticas_titulo); ?> <span>números</span></h2>
-            <p class="section-sub fade-up"><?php echo htmlspecialchars($estadisticas_sub); ?></p>
+            <h2 class="section-title fade-up">En <span>números</span></h2>
+            <p class="section-sub fade-up">La confianza de nuestros clientes y el impacto de nuestros proyectos.</p>
             <div class="grid-4">
-                <?php foreach ($stats as $stat): ?>
                 <div class="stat-card fade-up">
-                    <div class="stat-number" data-count="<?php echo htmlspecialchars($stat['valor']); ?>">0</div>
-                    <div class="stat-label"><?php echo htmlspecialchars($stat['label']); ?></div>
+                    <div class="stat-number" data-count="12">0</div>
+                    <div class="stat-label">Años de experiencia</div>
                 </div>
-                <?php endforeach; ?>
+                <div class="stat-card fade-up">
+                    <div class="stat-number" data-count="150">0</div>
+                    <div class="stat-label">Proyectos entregados</div>
+                </div>
+                <div class="stat-card fade-up">
+                    <div class="stat-number" data-count="98">0</div>
+                    <div class="stat-label">Clientes satisfechos</div>
+                </div>
+                <div class="stat-card fade-up">
+                    <div class="stat-number" data-count="100">0</div>
+                    <div class="stat-label">% Calidad garantizada</div>
+                </div>
             </div>
         </div>
     </section>
@@ -230,17 +172,33 @@ $footer_copyright = getContent('footer', 'copyright', '&copy; 2026 GEINFTEC S.A.
     <!-- EQUIPO -->
     <section id="equipo">
         <div class="container">
-            <h2 class="section-title fade-up"><?php echo htmlspecialchars($equipo_titulo); ?> <span>Equipo</span></h2>
-            <p class="section-sub fade-up"><?php echo htmlspecialchars($equipo_sub); ?></p>
+            <h2 class="section-title fade-up">Nuestro <span>Equipo</span></h2>
+            <p class="section-sub fade-up">Profesionales apasionados por la innovación y la excelencia.</p>
             <div class="grid-4">
-                <?php foreach ($equipo_items as $item): ?>
                 <div class="team-card fade-up">
-                    <img src="<?php echo htmlspecialchars($item['img']); ?>" alt="<?php echo htmlspecialchars($item['nombre']); ?>" loading="lazy" />
-                    <h4><?php echo htmlspecialchars($item['nombre']); ?></h4>
-                    <div class="role"><?php echo htmlspecialchars($item['cargo']); ?></div>
-                    <div class="bio"><?php echo htmlspecialchars($item['bio']); ?></div>
+                    <img src="https://images.unsplash.com/photo-1560250097-0b93528c311a?w=200&h=200&fit=crop&crop=face" alt="CEO" loading="lazy" />
+                    <h4>Carlos Mendoza</h4>
+                    <div class="role">CEO & Fundador</div>
+                    <div class="bio">Ingeniero civil con 20 años de experiencia en grandes infraestructuras.</div>
                 </div>
-                <?php endforeach; ?>
+                <div class="team-card fade-up">
+                    <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=200&h=200&fit=crop&crop=face" alt="CTO" loading="lazy" />
+                    <h4>Laura Fernández</h4>
+                    <div class="role">CTO</div>
+                    <div class="bio">Especialista en arquitectura de software y sistemas distribuidos.</div>
+                </div>
+                <div class="team-card fade-up">
+                    <img src="https://images.unsplash.com/photo-1580489944761-15a19d654956?w=200&h=200&fit=crop&crop=face" alt="PM" loading="lazy" />
+                    <h4>María Gómez</h4>
+                    <div class="role">Project Manager</div>
+                    <div class="bio">Lidera equipos multidisciplinarios con metodologías ágiles.</div>
+                </div>
+                <div class="team-card fade-up">
+                    <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=200&fit=crop&crop=face" alt="Ingeniero" loading="lazy" />
+                    <h4>Andrés Ruiz</h4>
+                    <div class="role">Ingeniero de Software</div>
+                    <div class="bio">Desarrollador full-stack apasionado por la IA y el cloud computing.</div>
+                </div>
             </div>
         </div>
     </section>
@@ -248,8 +206,8 @@ $footer_copyright = getContent('footer', 'copyright', '&copy; 2026 GEINFTEC S.A.
     <!-- CONTACTO -->
     <section id="contacto" style="background: rgba(0,0,0,0.2);">
         <div class="container">
-            <h2 class="section-title fade-up"><?php echo htmlspecialchars($contacto_titulo); ?> <span>ahora</span></h2>
-            <p class="section-sub fade-up"><?php echo htmlspecialchars($contacto_sub); ?></p>
+            <h2 class="section-title fade-up">Contáctanos <span>ahora</span></h2>
+            <p class="section-sub fade-up">Estamos listos para hacer realidad tu próximo proyecto.</p>
             <div class="contact-grid">
                 <div class="fade-up">
                     <form class="contact-form" id="contactForm" novalidate>
@@ -262,12 +220,12 @@ $footer_copyright = getContent('footer', 'copyright', '&copy; 2026 GEINFTEC S.A.
                     </form>
                 </div>
                 <div class="contact-info fade-up">
-                    <div class="item"><span class="icon">📍</span> <?php echo htmlspecialchars($contacto_direccion); ?></div>
-                    <div class="item"><span class="icon">📞</span> <?php echo htmlspecialchars($contacto_telefono); ?></div>
-                    <div class="item"><span class="icon">✉️</span> <?php echo htmlspecialchars($contacto_email); ?></div>
-                    <div class="item"><span class="icon">🕒</span> <?php echo htmlspecialchars($contacto_horario); ?></div>
+                    <div class="item"><span class="icon">📍</span> Bogotá, Colombia</div>
+                    <div class="item"><span class="icon">📞</span> +57 300 123 4567</div>
+                    <div class="item"><span class="icon">✉️</span> contacto@geinftec.com</div>
+                    <div class="item"><span class="icon">🕒</span> Lun – Vie: 8:00 am – 6:00 pm</div>
                     <div class="map-container">
-                        <iframe src="<?php echo htmlspecialchars($contacto_mapa); ?>" allowfullscreen loading="lazy"></iframe>
+                        <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3976.785140536432!2d-74.08373268519861!3d4.624548343699416!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8e3f9a3f5c1b2e6b%3A0x5f7b6c8a0a2b9c0d!2sBogot%C3%A1!5e0!3m2!1ses!2sco!4v1650000000000!5m2!1ses!2sco" allowfullscreen loading="lazy"></iframe>
                     </div>
                 </div>
             </div>
@@ -280,12 +238,12 @@ $footer_copyright = getContent('footer', 'copyright', '&copy; 2026 GEINFTEC S.A.
             <div class="footer-grid">
                 <div>
                     <div class="logo" style="font-size:1.8rem; margin-bottom:0.5rem;">GEINFTEC <span>S.A.S.</span></div>
-                    <p style="color:var(--text-muted); max-width:300px;"><?php echo htmlspecialchars($footer_texto); ?></p>
+                    <p style="color:var(--text-muted); max-width:300px;">Ingeniería, construcción y tecnología para un futuro sostenible e inteligente.</p>
                     <div class="socials" style="margin-top:1rem;">
-                        <a href="<?php echo htmlspecialchars($social_linkedin); ?>" aria-label="LinkedIn">🔗</a>
-                        <a href="<?php echo htmlspecialchars($social_twitter); ?>" aria-label="Twitter">🐦</a>
-                        <a href="<?php echo htmlspecialchars($social_instagram); ?>" aria-label="Instagram">📸</a>
-                        <a href="<?php echo htmlspecialchars($social_youtube); ?>" aria-label="YouTube">▶️</a>
+                        <a href="#" aria-label="LinkedIn">🔗</a>
+                        <a href="#" aria-label="Twitter">🐦</a>
+                        <a href="#" aria-label="Instagram">📸</a>
+                        <a href="#" aria-label="YouTube">▶️</a>
                     </div>
                 </div>
                 <div>
@@ -308,7 +266,7 @@ $footer_copyright = getContent('footer', 'copyright', '&copy; 2026 GEINFTEC S.A.
                 </div>
             </div>
             <div class="copyright">
-                <?php echo htmlspecialchars($footer_copyright); ?>
+                &copy; 2026 GEINFTEC S.A.S. Todos los derechos reservados. | Diseñado con 💙 en Colombia.
                 <br>
                 <span style="font-size:0.8rem; opacity:0.5;">
                     <a href="login.php" style="color: #b0b8d1; text-decoration:none;">🔐 Admin</a>

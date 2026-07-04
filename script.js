@@ -1,13 +1,10 @@
 // ============================================================
 // SCRIPT.JS - GEINFTEC S.A.S.
-// Todas las animaciones, efectos e interacciones
 // ============================================================
 (function() {
     'use strict';
 
-    // ============================================================
-    // 1. HERO CANVAS – Malla digital / red neuronal
-    // ============================================================
+    // 1. HERO CANVAS
     const canvas = document.getElementById('hero-canvas');
     if (canvas) {
         const ctx = canvas.getContext('2d');
@@ -25,9 +22,7 @@
         }
 
         class Particle {
-            constructor() {
-                this.reset();
-            }
+            constructor() { this.reset(); }
             reset() {
                 this.x = Math.random() * width;
                 this.y = Math.random() * height;
@@ -77,10 +72,7 @@
 
         function animateCanvas() {
             ctx.clearRect(0, 0, width, height);
-            particles.forEach(function(p) {
-                p.update();
-                p.draw();
-            });
+            particles.forEach(function(p) { p.update(); p.draw(); });
             drawLines();
             requestAnimationFrame(animateCanvas);
         }
@@ -95,9 +87,7 @@
         });
     }
 
-    // ============================================================
-    // 2. TÍTULO ROTATIVO (máquina de escribir)
-    // ============================================================
+    // 2. MÁQUINA DE ESCRIBIR
     const rotatingEl = document.getElementById('rotating-text');
     if (rotatingEl) {
         let phrases = [];
@@ -111,22 +101,15 @@
             phrases = ['Ingeniería de vanguardia', 'Construcción inteligente', 'Software que transforma'];
         }
 
-        let phraseIndex = 0;
-        let charIndex = 0;
-        let isDeleting = false;
-        let typeSpeed = 100;
+        let phraseIndex = 0, charIndex = 0, isDeleting = false, typeSpeed = 100;
 
         function typeEffect() {
             const current = phrases[phraseIndex];
             if (!isDeleting) {
                 rotatingEl.textContent = current.substring(0, charIndex + 1);
                 charIndex++;
-                if (charIndex === current.length) {
-                    isDeleting = true;
-                    typeSpeed = 2000;
-                } else {
-                    typeSpeed = 80 + Math.random() * 40;
-                }
+                typeSpeed = (charIndex === current.length) ? 2000 : (80 + Math.random() * 40);
+                if (charIndex === current.length) isDeleting = true;
             } else {
                 rotatingEl.textContent = current.substring(0, charIndex);
                 charIndex--;
@@ -140,13 +123,10 @@
             }
             setTimeout(typeEffect, typeSpeed);
         }
-
         setTimeout(typeEffect, 500);
     }
 
-    // ============================================================
     // 3. MENÚ HAMBURGUESA
-    // ============================================================
     const hamburger = document.getElementById('hamburger');
     const navLinks = document.getElementById('nav-links');
     if (hamburger && navLinks) {
@@ -154,7 +134,6 @@
             hamburger.classList.toggle('active');
             navLinks.classList.toggle('open');
         });
-
         navLinks.querySelectorAll('a').forEach(function(link) {
             link.addEventListener('click', function() {
                 hamburger.classList.remove('active');
@@ -163,40 +142,28 @@
         });
     }
 
-    // ============================================================
-    // 4. BARRA DE PROGRESO DE LECTURA
-    // ============================================================
+    // 4. BARRA DE PROGRESO
     const progressBar = document.getElementById('progress-bar');
     if (progressBar) {
         window.addEventListener('scroll', function() {
             const scrollTop = window.scrollY;
             const docHeight = document.documentElement.scrollHeight - window.innerHeight;
-            const progress = (scrollTop / docHeight) * 100;
-            progressBar.style.width = progress + '%';
+            progressBar.style.width = (scrollTop / docHeight * 100) + '%';
         });
     }
 
-    // ============================================================
     // 5. BOTÓN VOLVER ARRIBA
-    // ============================================================
     const backBtn = document.getElementById('back-to-top');
     if (backBtn) {
         window.addEventListener('scroll', function() {
-            if (window.scrollY > 400) {
-                backBtn.classList.add('visible');
-            } else {
-                backBtn.classList.remove('visible');
-            }
+            backBtn.classList.toggle('visible', window.scrollY > 400);
         });
-
         backBtn.addEventListener('click', function() {
             window.scrollTo({ top: 0, behavior: 'smooth' });
         });
     }
 
-    // ============================================================
-    // 6. INTERSECTION OBSERVER – Apariciones y contadores
-    // ============================================================
+    // 6. INTERSECTION OBSERVER
     const fadeElements = document.querySelectorAll('.fade-up');
     if (fadeElements.length > 0) {
         const observer = new IntersectionObserver(function(entries) {
@@ -205,48 +172,34 @@
                     entry.target.classList.add('visible');
                     const statNumber = entry.target.querySelector('.stat-number');
                     if (statNumber && !statNumber.dataset.animated) {
-                        animateCounter(statNumber);
+                        const target = parseInt(statNumber.dataset.count, 10);
+                        let current = 0;
+                        const increment = Math.ceil(target / 60);
+                        const timer = setInterval(function() {
+                            current += increment;
+                            if (current >= target) {
+                                current = target;
+                                clearInterval(timer);
+                            }
+                            statNumber.textContent = current + (target === 100 ? '%' : '');
+                        }, 25);
                         statNumber.dataset.animated = 'true';
                     }
                 }
             });
         }, { threshold: 0.2 });
-
-        fadeElements.forEach(function(el) {
-            observer.observe(el);
-        });
+        fadeElements.forEach(function(el) { observer.observe(el); });
     }
 
-    // ============================================================
-    // 7. CONTADOR ANIMADO
-    // ============================================================
-    function animateCounter(el) {
-        const target = parseInt(el.dataset.count, 10);
-        let current = 0;
-        const increment = Math.ceil(target / 60);
-        const timer = setInterval(function() {
-            current += increment;
-            if (current >= target) {
-                current = target;
-                clearInterval(timer);
-            }
-            el.textContent = current + (target === 100 ? '%' : '');
-        }, 25);
-    }
-
-    // ============================================================
-    // 8. VALIDACIÓN FORMULARIO CONTACTO
-    // ============================================================
+    // 7. CONTACTO
     const contactForm = document.getElementById('contactForm');
     if (contactForm) {
-        const formFeedback = document.getElementById('formFeedback');
         contactForm.addEventListener('submit', function(e) {
             e.preventDefault();
             const nombre = document.getElementById('nombre');
             const email = document.getElementById('email');
             const mensaje = document.getElementById('mensaje');
             let valid = true;
-
             [nombre, email, mensaje].forEach(function(field) {
                 field.classList.remove('error');
                 if (!field.value.trim()) {
@@ -254,65 +207,41 @@
                     valid = false;
                 }
             });
-
             if (email.value.trim() && !email.value.includes('@')) {
                 email.classList.add('error');
                 valid = false;
             }
-
+            const feedback = document.getElementById('formFeedback');
             if (valid) {
-                formFeedback.textContent = '✅ Mensaje enviado con éxito. ¡Te contactaremos pronto!';
-                formFeedback.style.color = 'var(--cyan)';
+                feedback.textContent = '✅ Mensaje enviado con éxito. ¡Te contactaremos pronto!';
+                feedback.style.color = 'var(--cyan)';
                 contactForm.reset();
             } else {
-                formFeedback.textContent = '⚠️ Por favor completa todos los campos correctamente.';
-                formFeedback.style.color = '#ff6b6b';
+                feedback.textContent = '⚠️ Por favor completa todos los campos correctamente.';
+                feedback.style.color = '#ff6b6b';
             }
         });
     }
 
-    // ============================================================
-    // 9. NEWSLETTER
-    // ============================================================
+    // 8. NEWSLETTER
     const newsletterForm = document.getElementById('newsletterForm');
     if (newsletterForm) {
-        const nlFeedback = document.getElementById('newsletterFeedback');
         newsletterForm.addEventListener('submit', function(e) {
             e.preventDefault();
             const input = newsletterForm.querySelector('input[type="email"]');
+            const feedback = document.getElementById('newsletterFeedback');
             if (input.value.trim() && input.value.includes('@')) {
-                nlFeedback.textContent = '✅ ¡Suscripción exitosa! Revisa tu correo.';
-                nlFeedback.style.color = 'var(--cyan)';
+                feedback.textContent = '✅ ¡Suscripción exitosa! Revisa tu correo.';
+                feedback.style.color = 'var(--cyan)';
                 newsletterForm.reset();
             } else {
-                nlFeedback.textContent = '⚠️ Ingresa un correo válido.';
-                nlFeedback.style.color = '#ff6b6b';
+                feedback.textContent = '⚠️ Ingresa un correo válido.';
+                feedback.style.color = '#ff6b6b';
             }
         });
     }
 
-    // ============================================================
-    // 10. LAZY LOADING para imágenes
-    // ============================================================
-    if ('IntersectionObserver' in window) {
-        const lazyObserver = new IntersectionObserver(function(entries) {
-            entries.forEach(function(entry) {
-                if (entry.isIntersecting) {
-                    const img = entry.target;
-                    img.loading = 'lazy';
-                    lazyObserver.unobserve(img);
-                }
-            });
-        });
-
-        document.querySelectorAll('img[loading="lazy"]').forEach(function(img) {
-            lazyObserver.observe(img);
-        });
-    }
-
-    // ============================================================
-    // 11. PARALLAX suave en hero
-    // ============================================================
+    // 9. PARALLAX
     const heroContent = document.querySelector('.hero-content');
     if (heroContent) {
         window.addEventListener('scroll', function() {
