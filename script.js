@@ -1,5 +1,5 @@
 // ============================================================
-// SCRIPT.JS - GEINFTEC S.A.S.
+// SCRIPT.JS - GEINFTEC S.A.S. (SIN EVAL)
 // ============================================================
 (function() {
     'use strict';
@@ -108,8 +108,12 @@
             if (!isDeleting) {
                 rotatingEl.textContent = current.substring(0, charIndex + 1);
                 charIndex++;
-                typeSpeed = (charIndex === current.length) ? 2000 : (80 + Math.random() * 40);
-                if (charIndex === current.length) isDeleting = true;
+                if (charIndex === current.length) {
+                    isDeleting = true;
+                    typeSpeed = 2000;
+                } else {
+                    typeSpeed = 80 + Math.random() * 40;
+                }
             } else {
                 rotatingEl.textContent = current.substring(0, charIndex);
                 charIndex--;

@@ -1,10 +1,13 @@
 <?php
 // ============================================================
-// CONFIGURACIÓN DE ERRORES (MOSTRAR EN PANTALLA PARA DEPURAR)
+// CONFIGURACIÓN DE ERRORES Y CSP DESDE PHP
 // ============================================================
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
+
+// Enviar cabecera CSP para permitir unsafe-eval
+header("Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https:; style-src 'self' 'unsafe-inline' https:; img-src 'self' data: https:; font-src 'self' data: https:; connect-src 'self' https:;");
 
 // ============================================================
 // INCLUIR FUNCIONES Y OBTENER DATOS
@@ -112,7 +115,7 @@ try {
 } catch (Exception $e) {
     $db_error = true;
     error_log("Error en index.php: " . $e->getMessage());
-    // Usar valores por defecto (ya definidos más abajo)
+    // Valores por defecto (se definen en la parte del HTML)
     // Simplemente asignamos valores por defecto
     $hero_titulo = 'Innovación que';
     $hero_subtitulo = 'Cargando contenido...';
@@ -167,14 +170,13 @@ try {
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>GEINFTEC S.A.S. – Ingeniería, Construcción y Desarrollo de Software</title>
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https:; style-src 'self' 'unsafe-inline' https:; img-src 'self' data: https:; font-src 'self' data: https:; connect-src 'self' https:;">
+    <!-- NO HAY META CSP, se envía desde PHP -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-    <!-- Mensaje de depuración si hay error en la BD -->
     <?php if ($db_error): ?>
         <div style="background: #ff6b6b; color: #fff; padding: 1rem; text-align: center; font-family: sans-serif; position: fixed; top: 0; left: 0; width: 100%; z-index: 9999;">
             ⚠️ Error al cargar datos desde la base de datos. Mostrando contenido de respaldo. Revisa los logs de Render para más detalles.
@@ -184,7 +186,7 @@ try {
     <!-- Progress Bar -->
     <div id="progress-bar"></div>
 
-    <!-- HEADER (igual que el estático) -->
+    <!-- HEADER -->
     <header class="header" id="header">
         <div class="container">
             <div class="logo">GEINFTEC <span>S.A.S.</span></div>
