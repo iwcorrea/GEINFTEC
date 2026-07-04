@@ -59,23 +59,32 @@ $imagenes = listImagesFromBucket();
 $csrf_token = generateCSRFToken();
 
 // ============================================================
-// MEJORA: Unificación de claves de imágenes en proyectos y equipo
+// MEJORA: Filtrar solo las claves de imágenes de items (itemX_img)
 // ============================================================
-// Ocultar claves duplicadas (img1, img2, etc.) en secciones 'equipo' y 'proyectos'
-$duplicados_equipo = ['img1', 'img2', 'img3', 'img4', 'miembro1_imagen', 'miembro2_imagen', 'miembro3_imagen', 'miembro4_imagen'];
-$duplicados_proyectos = ['img1', 'img2', 'img3'];
-
-if (isset($contenido['equipo'])) {
-    $contenido['equipo'] = array_filter($contenido['equipo'], function($clave) use ($duplicados_equipo) {
-        return !in_array($clave, $duplicados_equipo);
-    }, ARRAY_FILTER_USE_KEY);
+function filtrarClaves($campos, $seccion) {
+    if ($seccion === 'proyectos' || $seccion === 'equipo') {
+        // Solo mantener claves que empiecen con 'item' y terminen con '_img'
+        $filtradas = [];
+        foreach ($campos as $clave => $valor) {
+            if (preg_match('/^item\d+_img$/', $clave)) {
+                $filtradas[$clave] = $valor;
+            }
+        }
+        // También mantener otras claves que no sean imágenes (como títulos, descripciones)
+        foreach ($campos as $clave => $valor) {
+            if (!preg_match('/^item\d+_img$/', $clave) && strpos($clave, 'img') === false && strpos($clave, 'imagen') === false && strpos($clave, 'foto') === false) {
+                $filtradas[$clave] = $valor;
+            }
+        }
+        return $filtradas;
+    }
+    return $campos;
 }
 
-if (isset($contenido['proyectos'])) {
-    $contenido['proyectos'] = array_filter($contenido['proyectos'], function($clave) use ($duplicados_proyectos) {
-        return !in_array($clave, $duplicados_proyectos);
-    }, ARRAY_FILTER_USE_KEY);
+foreach ($contenido as $seccion => &$campos) {
+    $campos = filtrarClaves($campos, $seccion);
 }
+unset($campos);
 
 // ============================================================
 // MEJORA: Ordenar campos para que las imágenes aparezcan primero
@@ -205,7 +214,6 @@ $primeraSeccion = $secciones[0] ?? 'hero';
                     <div class="campo" data-seccion="<?php echo $seccion; ?>" data-clave="<?php echo $clave; ?>">
                         <label for="<?php echo $seccion.'_'.$clave; ?>">
                             <?php 
-                            // Mejora: etiquetas más descriptivas
                             $label = $clave;
                             if (strpos($clave, 'img') !== false || strpos($clave, 'imagen') !== false || strpos($clave, 'foto') !== false) {
                                 $label = '🖼️ ' . $clave;
@@ -262,7 +270,6 @@ $primeraSeccion = $secciones[0] ?? 'hero';
                         </div>
                     </div>
                 <?php endforeach; ?>
-                <!-- Mejora: Mensaje de ayuda para imágenes -->
                 <div style="margin-top:1rem; padding:0.8rem; background:rgba(0,245,212,0.05); border-radius:8px; border-left:3px solid #00f5d4;">
                     <p style="color:#b0b8d1; font-size:0.85rem;">
                         💡 <strong>Consejo:</strong> Para imágenes, usa el botón "Elegir existente" para reutilizar imágenes ya subidas.
@@ -443,7 +450,6 @@ $primeraSeccion = $secciones[0] ?? 'hero';
     }
 
     function refreshImages() {
-        // Recargar la página para actualizar la lista de imágenes
         window.location.reload();
     }
 
