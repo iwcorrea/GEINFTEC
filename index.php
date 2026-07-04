@@ -1,167 +1,103 @@
 <?php
-// ============================================================
-// CONFIGURACIÓN DE ERRORES Y CSP (desde PHP)
-// ============================================================
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
-
-// Establecer CSP desde PHP (NO necesita .htaccess)
-header("Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https: data:; style-src 'self' 'unsafe-inline' https:; img-src 'self' data: https:; font-src 'self' data: https:; connect-src 'self' https:;");
-
-// ============================================================
-// INCLUIR FUNCIONES Y OBTENER DATOS
-// ============================================================
 require_once 'funciones.php';
 
-// Variable para depuración
-$db_error = false;
+// ============================================================
+// OBTENER TODOS LOS DATOS DE LA BD
+// ============================================================
 
-try {
-    // --- Hero ---
-    $hero_titulo = getContent('hero', 'titulo', 'Innovación que');
-    $hero_subtitulo = getContent('hero', 'subtitulo', 'Ingeniería, construcción y desarrollo de software con visión de vanguardia. Transformamos ideas en realidades digitales y físicas.');
-    $hero_frases = getContent('hero', 'frases', '["Ingeniería de vanguardia","Construcción inteligente","Software que transforma"]');
-    $hero_frases_array = json_decode($hero_frases, true) ?: ["Ingeniería de vanguardia","Construcción inteligente","Software que transforma"];
+// --- Hero ---
+$hero_titulo = getContent('hero', 'titulo', 'Innovación que');
+$hero_subtitulo = getContent('hero', 'subtitulo', 'Ingeniería, construcción y desarrollo de software con visión de vanguardia. Transformamos ideas en realidades digitales y físicas.');
+$hero_frases = getContent('hero', 'frases', '["Ingeniería de vanguardia","Construcción inteligente","Software que transforma"]');
+$hero_frases_array = json_decode($hero_frases, true) ?: ["Ingeniería de vanguardia","Construcción inteligente","Software que transforma"];
 
-    // --- Servicios ---
-    $servicios_titulo = getContent('servicios', 'titulo', 'Nuestros');
-    $servicios_sub = getContent('servicios', 'subtitulo', 'Soluciones integrales que combinan ingeniería de calidad con tecnología de punta.');
-    $servicios_items = [];
-    for ($i = 1; $i <= 6; $i++) {
-        $servicios_items[] = [
-            'icon' => getContent('servicios', "item{$i}_icon", ''),
-            'titulo' => getContent('servicios', "item{$i}_titulo", "Servicio {$i}"),
-            'desc' => getContent('servicios', "item{$i}_desc", 'Descripción del servicio.')
-        ];
-    }
-
-    // --- Proyectos ---
-    $proyectos_titulo = getContent('proyectos', 'titulo', 'Proyectos');
-    $proyectos_sub = getContent('proyectos', 'subtitulo', 'Obras y soluciones que reflejan nuestra excelencia y compromiso.');
-    $proyectos_items = [];
-    for ($i = 1; $i <= 3; $i++) {
-        $proyectos_items[] = [
-            'img' => getContent('proyectos', "item{$i}_img", 'https://images.unsplash.com/photo-1541888946425-d81bb19240f5?w=600&h=400&fit=crop'),
-            'titulo' => getContent('proyectos', "item{$i}_titulo", "Proyecto {$i}"),
-            'desc' => getContent('proyectos', "item{$i}_desc", 'Descripción del proyecto.')
-        ];
-    }
-
-    // --- Tecnologías ---
-    $tecnologias_titulo = getContent('tecnologias', 'titulo', 'Tecnologías');
-    $tecnologias_sub = getContent('tecnologias', 'subtitulo', 'Herramientas y plataformas con las que trabajamos día a día.');
-    $tecnologias_raw = getContent('tecnologias', 'lista', '[{"icon":"⚛️","name":"React"},{"icon":"🟢","name":"Node.js"},{"icon":"🐍","name":"Python"},{"icon":"☁️","name":"AWS"},{"icon":"🐳","name":"Docker"},{"icon":"🗄️","name":"PostgreSQL"},{"icon":"📱","name":"Flutter"},{"icon":"🔷","name":"TypeScript"}]');
-    $tecnologias_array = json_decode($tecnologias_raw, true);
-    if (!is_array($tecnologias_array)) {
-        $tecnologias_array = [
-            ["icon" => "⚛️", "name" => "React"],
-            ["icon" => "🟢", "name" => "Node.js"],
-            ["icon" => "🐍", "name" => "Python"],
-            ["icon" => "☁️", "name" => "AWS"],
-            ["icon" => "🐳", "name" => "Docker"],
-            ["icon" => "🗄️", "name" => "PostgreSQL"],
-            ["icon" => "📱", "name" => "Flutter"],
-            ["icon" => "🔷", "name" => "TypeScript"]
-        ];
-    }
-
-    // --- Estadísticas ---
-    $estadisticas_titulo = getContent('estadisticas', 'titulo', 'En');
-    $estadisticas_sub = getContent('estadisticas', 'subtitulo', 'La confianza de nuestros clientes y el impacto de nuestros proyectos.');
-    $stats = [
-        ['clave' => 'anos', 'label' => 'Años de experiencia', 'default' => 12],
-        ['clave' => 'proyectos', 'label' => 'Proyectos entregados', 'default' => 150],
-        ['clave' => 'clientes', 'label' => 'Clientes satisfechos', 'default' => 98],
-        ['clave' => 'satisfaccion', 'label' => '% Calidad garantizada', 'default' => 100]
+// --- Servicios ---
+$servicios_titulo = getContent('servicios', 'titulo', 'Nuestros');
+$servicios_sub = getContent('servicios', 'subtitulo', 'Soluciones integrales que combinan ingeniería de calidad con tecnología de punta.');
+$servicios_items = [];
+for ($i = 1; $i <= 6; $i++) {
+    $servicios_items[] = [
+        'icon' => getContent('servicios', "item{$i}_icon", ''),
+        'titulo' => getContent('servicios', "item{$i}_titulo", "Servicio {$i}"),
+        'desc' => getContent('servicios', "item{$i}_desc", 'Descripción del servicio.')
     ];
-    foreach ($stats as &$stat) {
-        $stat['valor'] = getContent('estadisticas', $stat['clave'], $stat['default']);
-    }
-    unset($stat);
-
-    // --- Equipo ---
-    $equipo_titulo = getContent('equipo', 'titulo', 'Nuestro');
-    $equipo_sub = getContent('equipo', 'subtitulo', 'Profesionales apasionados por la innovación y la excelencia.');
-    $equipo_items = [];
-    for ($i = 1; $i <= 4; $i++) {
-        $equipo_items[] = [
-            'img' => getContent('equipo', "item{$i}_img", 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=200&h=200&fit=crop&crop=face'),
-            'nombre' => getContent('equipo', "item{$i}_nombre", "Miembro {$i}"),
-            'cargo' => getContent('equipo', "item{$i}_cargo", 'Cargo'),
-            'bio' => getContent('equipo', "item{$i}_bio", 'Biografía del miembro.')
-        ];
-    }
-
-    // --- Contacto ---
-    $contacto_titulo = getContent('contacto', 'titulo', 'Contáctanos');
-    $contacto_sub = getContent('contacto', 'subtitulo', 'Estamos listos para hacer realidad tu próximo proyecto.');
-    $contacto_direccion = getContent('contacto', 'direccion', 'Bogotá, Colombia');
-    $contacto_telefono = getContent('contacto', 'telefono', '+57 300 123 4567');
-    $contacto_email = getContent('contacto', 'email', 'contacto@geinftec.com');
-    $contacto_horario = getContent('contacto', 'horario', 'Lun – Vie: 8:00 am – 6:00 pm');
-    $contacto_mapa = getContent('contacto', 'mapa_embed', 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3976.785140536432!2d-74.08373268519861!3d4.624548343699416!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8e3f9a3f5c1b2e6b%3A0x5f7b6c8a0a2b9c0d!2sBogot%C3%A1!5e0!3m2!1ses!2sco!4v1650000000000!5m2!1ses!2sco');
-
-    // --- Redes Sociales ---
-    $social_linkedin = getContent('sociales', 'linkedin', '#');
-    $social_twitter = getContent('sociales', 'twitter', '#');
-    $social_instagram = getContent('sociales', 'instagram', '#');
-    $social_youtube = getContent('sociales', 'youtube', '#');
-
-    // --- Footer ---
-    $footer_texto = getContent('footer', 'texto', 'Ingeniería, construcción y tecnología para un futuro sostenible e inteligente.');
-    $footer_copyright = getContent('footer', 'copyright', '&copy; 2026 GEINFTEC S.A.S. Todos los derechos reservados. | Diseñado con 💙 en Colombia.');
-
-} catch (Exception $e) {
-    $db_error = true;
-    error_log("Error en index.php: " . $e->getMessage());
-    // Valores por defecto (se definen más abajo)
-    $hero_titulo = 'Innovación que';
-    $hero_subtitulo = 'Cargando contenido...';
-    $hero_frases_array = ["Ingeniería de vanguardia", "Construcción inteligente", "Software que transforma"];
-    $servicios_titulo = 'Nuestros';
-    $servicios_sub = 'Cargando servicios...';
-    $servicios_items = [];
-    for ($i = 1; $i <= 6; $i++) {
-        $servicios_items[] = ['icon' => '🔧', 'titulo' => 'Servicio ' . $i, 'desc' => 'Descripción del servicio.'];
-    }
-    $proyectos_titulo = 'Proyectos';
-    $proyectos_sub = 'Cargando proyectos...';
-    $proyectos_items = [];
-    for ($i = 1; $i <= 3; $i++) {
-        $proyectos_items[] = ['img' => 'https://images.unsplash.com/photo-1541888946425-d81bb19240f5?w=600&h=400&fit=crop', 'titulo' => 'Proyecto ' . $i, 'desc' => 'Descripción del proyecto.'];
-    }
-    $tecnologias_titulo = 'Tecnologías';
-    $tecnologias_sub = 'Cargando tecnologías...';
-    $tecnologias_array = [["icon" => "⚛️", "name" => "React"], ["icon" => "🟢", "name" => "Node.js"]];
-    $estadisticas_titulo = 'En';
-    $estadisticas_sub = 'Cargando estadísticas...';
-    $stats = [
-        ['clave' => 'anos', 'label' => 'Años de experiencia', 'valor' => 12],
-        ['clave' => 'proyectos', 'label' => 'Proyectos entregados', 'valor' => 150],
-        ['clave' => 'clientes', 'label' => 'Clientes satisfechos', 'valor' => 98],
-        ['clave' => 'satisfaccion', 'label' => '% Calidad garantizada', 'valor' => 100]
-    ];
-    $equipo_titulo = 'Nuestro';
-    $equipo_sub = 'Cargando equipo...';
-    $equipo_items = [];
-    for ($i = 1; $i <= 4; $i++) {
-        $equipo_items[] = ['img' => 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=200&h=200&fit=crop&crop=face', 'nombre' => 'Miembro ' . $i, 'cargo' => 'Cargo', 'bio' => 'Biografía.'];
-    }
-    $contacto_titulo = 'Contáctanos';
-    $contacto_sub = 'Estamos listos para ayudarte.';
-    $contacto_direccion = 'Bogotá, Colombia';
-    $contacto_telefono = '+57 300 123 4567';
-    $contacto_email = 'contacto@geinftec.com';
-    $contacto_horario = 'Lun – Vie: 8:00 am – 6:00 pm';
-    $contacto_mapa = 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3976.785140536432!2d-74.08373268519861!3d4.624548343699416!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8e3f9a3f5c1b2e6b%3A0x5f7b6c8a0a2b9c0d!2sBogot%C3%A1!5e0!3m2!1ses!2sco!4v1650000000000!5m2!1ses!2sco';
-    $social_linkedin = '#';
-    $social_twitter = '#';
-    $social_instagram = '#';
-    $social_youtube = '#';
-    $footer_texto = 'GEINFTEC S.A.S. - Ingeniería y tecnología.';
-    $footer_copyright = '&copy; 2026 GEINFTEC S.A.S. Todos los derechos reservados.';
 }
+
+// --- Proyectos ---
+$proyectos_titulo = getContent('proyectos', 'titulo', 'Proyectos');
+$proyectos_sub = getContent('proyectos', 'subtitulo', 'Obras y soluciones que reflejan nuestra excelencia y compromiso.');
+$proyectos_items = [];
+for ($i = 1; $i <= 3; $i++) {
+    $proyectos_items[] = [
+        'img' => getContent('proyectos', "item{$i}_img", 'https://images.unsplash.com/photo-1541888946425-d81bb19240f5?w=600&h=400&fit=crop'),
+        'titulo' => getContent('proyectos', "item{$i}_titulo", "Proyecto {$i}"),
+        'desc' => getContent('proyectos', "item{$i}_desc", 'Descripción del proyecto.')
+    ];
+}
+
+// --- Tecnologías ---
+$tecnologias_titulo = getContent('tecnologias', 'titulo', 'Tecnologías');
+$tecnologias_sub = getContent('tecnologias', 'subtitulo', 'Herramientas y plataformas con las que trabajamos día a día.');
+$tecnologias_raw = getContent('tecnologias', 'lista', '[{"icon":"⚛️","name":"React"},{"icon":"🟢","name":"Node.js"},{"icon":"🐍","name":"Python"},{"icon":"☁️","name":"AWS"},{"icon":"🐳","name":"Docker"},{"icon":"🗄️","name":"PostgreSQL"},{"icon":"📱","name":"Flutter"},{"icon":"🔷","name":"TypeScript"}]');
+$tecnologias_array = json_decode($tecnologias_raw, true);
+if (!is_array($tecnologias_array)) {
+    $tecnologias_array = [
+        ["icon" => "⚛️", "name" => "React"],
+        ["icon" => "🟢", "name" => "Node.js"],
+        ["icon" => "🐍", "name" => "Python"],
+        ["icon" => "☁️", "name" => "AWS"],
+        ["icon" => "🐳", "name" => "Docker"],
+        ["icon" => "🗄️", "name" => "PostgreSQL"],
+        ["icon" => "📱", "name" => "Flutter"],
+        ["icon" => "🔷", "name" => "TypeScript"]
+    ];
+}
+
+// --- Estadísticas ---
+$estadisticas_titulo = getContent('estadisticas', 'titulo', 'En');
+$estadisticas_sub = getContent('estadisticas', 'subtitulo', 'La confianza de nuestros clientes y el impacto de nuestros proyectos.');
+$stats = [
+    ['clave' => 'anos', 'label' => 'Años de experiencia', 'default' => 12],
+    ['clave' => 'proyectos', 'label' => 'Proyectos entregados', 'default' => 150],
+    ['clave' => 'clientes', 'label' => 'Clientes satisfechos', 'default' => 98],
+    ['clave' => 'satisfaccion', 'label' => '% Calidad garantizada', 'default' => 100]
+];
+foreach ($stats as &$stat) {
+    $stat['valor'] = getContent('estadisticas', $stat['clave'], $stat['default']);
+}
+unset($stat);
+
+// --- Equipo ---
+$equipo_titulo = getContent('equipo', 'titulo', 'Nuestro');
+$equipo_sub = getContent('equipo', 'subtitulo', 'Profesionales apasionados por la innovación y la excelencia.');
+$equipo_items = [];
+for ($i = 1; $i <= 4; $i++) {
+    $equipo_items[] = [
+        'img' => getContent('equipo', "item{$i}_img", 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=200&h=200&fit=crop&crop=face'),
+        'nombre' => getContent('equipo', "item{$i}_nombre", "Miembro {$i}"),
+        'cargo' => getContent('equipo', "item{$i}_cargo", 'Cargo'),
+        'bio' => getContent('equipo', "item{$i}_bio", 'Biografía del miembro.')
+    ];
+}
+
+// --- Contacto ---
+$contacto_titulo = getContent('contacto', 'titulo', 'Contáctanos');
+$contacto_sub = getContent('contacto', 'subtitulo', 'Estamos listos para hacer realidad tu próximo proyecto.');
+$contacto_direccion = getContent('contacto', 'direccion', 'Bogotá, Colombia');
+$contacto_telefono = getContent('contacto', 'telefono', '+57 300 123 4567');
+$contacto_email = getContent('contacto', 'email', 'contacto@geinftec.com');
+$contacto_horario = getContent('contacto', 'horario', 'Lun – Vie: 8:00 am – 6:00 pm');
+$contacto_mapa = getContent('contacto', 'mapa_embed', 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3976.785140536432!2d-74.08373268519861!3d4.624548343699416!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8e3f9a3f5c1b2e6b%3A0x5f7b6c8a0a2b9c0d!2sBogot%C3%A1!5e0!3m2!1ses!2sco!4v1650000000000!5m2!1ses!2sco');
+
+// --- Redes Sociales ---
+$social_linkedin = getContent('sociales', 'linkedin', '#');
+$social_twitter = getContent('sociales', 'twitter', '#');
+$social_instagram = getContent('sociales', 'instagram', '#');
+$social_youtube = getContent('sociales', 'youtube', '#');
+
+// --- Footer ---
+$footer_texto = getContent('footer', 'texto', 'Ingeniería, construcción y tecnología para un futuro sostenible e inteligente.');
+$footer_copyright = getContent('footer', 'copyright', '&copy; 2026 GEINFTEC S.A.S. Todos los derechos reservados. | Diseñado con 💙 en Colombia.');
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -169,19 +105,14 @@ try {
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>GEINFTEC S.A.S. – Ingeniería, Construcción y Desarrollo de Software</title>
-    <!-- SIN META CSP (se maneja desde PHP) -->
+    <!-- CSP mediante meta tag (compatible con Render) -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https:; style-src 'self' 'unsafe-inline' https:; img-src 'self' data: https:; font-src 'self' data: https:; connect-src 'self' https:;">
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-    <!-- Mensaje de depuración si hay error en la BD -->
-    <?php if ($db_error): ?>
-        <div style="background: #ff6b6b; color: #fff; padding: 1rem; text-align: center; font-family: sans-serif; position: fixed; top: 0; left: 0; width: 100%; z-index: 9999;">
-            ⚠️ Error al cargar datos desde la base de datos. Mostrando contenido de respaldo. Revisa los logs de Render para más detalles.
-        </div>
-    <?php endif; ?>
 
     <!-- Progress Bar -->
     <div id="progress-bar"></div>
