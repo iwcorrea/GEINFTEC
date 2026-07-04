@@ -89,7 +89,7 @@ function registerLoginAttempt($ip, $success) {
     }
 }
 
-// --- Subida a Supabase Storage (CORREGIDA DEFINITIVA) ---
+// --- Subida a Supabase Storage (FINAL CORREGIDO) ---
 function uploadToSupabase($file, $filename = null) {
     // Validar archivo
     if ($file['error'] !== UPLOAD_ERR_OK) {
@@ -100,6 +100,7 @@ function uploadToSupabase($file, $filename = null) {
         return ['error' => 'El archivo excede el tamaño máximo permitido (5 MB).'];
     }
     
+    // Validar tipo MIME real
     $finfo = finfo_open(FILEINFO_MIME_TYPE);
     $mimeType = finfo_file($finfo, $file['tmp_name']);
     finfo_close($finfo);
@@ -109,6 +110,7 @@ function uploadToSupabase($file, $filename = null) {
         return ['error' => 'Formato de imagen no permitido. Usa JPG, PNG, GIF o WEBP.'];
     }
     
+    // Generar nombre único y seguro
     $ext = pathinfo($file['name'], PATHINFO_EXTENSION);
     $filename = $filename ?: uniqid() . '.' . $ext;
     $filename = preg_replace('/[^a-zA-Z0-9_.-]/', '_', $filename);
@@ -118,7 +120,7 @@ function uploadToSupabase($file, $filename = null) {
         return ['error' => 'No se pudo leer el archivo.'];
     }
     
-    // --- ENDPOINT CORRECTO: /storage/v1/object/ (sin /rest/v1) ---
+    // --- ENDPOINT CORRECTO: /storage/v1/object/{bucket}/{filename} (POST) ---
     $url = SUPABASE_URL . '/storage/v1/object/' . SUPABASE_BUCKET . '/' . $filename;
     
     $ch = curl_init($url);
@@ -129,7 +131,7 @@ function uploadToSupabase($file, $filename = null) {
         'Content-Type: ' . $mimeType,
         'apikey: ' . SUPABASE_ANON_KEY,
         'Authorization: Bearer ' . SUPABASE_ANON_KEY,
-        'Content-Length: ' . strlen($fileContent)
+        'x-upsert: true' // Permite sobrescribir si existe (opcional)
     ]);
     
     $response = curl_exec($ch);
@@ -137,10 +139,11 @@ function uploadToSupabase($file, $filename = null) {
     $curlError = curl_error($ch);
     curl_close($ch);
     
-    // Depuración: registrar la URL usada
+    // Log para depuración
     error_log("Supabase upload URL: " . $url);
     
     if ($httpCode === 200 || $httpCode === 201) {
+        // La URL pública SÍ lleva "/public/"
         $publicUrl = SUPABASE_STORAGE_URL . $filename;
         return ['success' => $publicUrl];
     } else {
