@@ -2,6 +2,7 @@
 session_start();
 require_once 'funciones.php';
 
+// Verificar autenticación
 if (!isset($_SESSION['admin_logged']) || $_SESSION['admin_logged'] !== true) {
     header('Location: login.php');
     exit;
@@ -10,6 +11,7 @@ if (!isset($_SESSION['admin_logged']) || $_SESSION['admin_logged'] !== true) {
 $mensaje = '';
 $error = '';
 
+// Procesar acciones vía AJAX (sin recargar)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     header('Content-Type: application/json');
     if (!verifyCSRFToken($_POST['csrf_token'] ?? '')) {
@@ -56,11 +58,19 @@ $contenido = getAllContent();
 $imagenes = listImagesFromBucket();
 $csrf_token = generateCSRFToken();
 
-// Ocultar duplicados en equipo (solo itemX_img)
+// Ocultar claves duplicadas en secciones 'equipo' y 'proyectos'
+$duplicados_equipo = ['img1', 'img2', 'img3', 'img4', 'miembro1_imagen', 'miembro2_imagen', 'miembro3_imagen', 'miembro4_imagen'];
+$duplicados_proyectos = ['img1', 'img2', 'img3'];
+
 if (isset($contenido['equipo'])) {
-    $duplicados = ['img1', 'img2', 'img3', 'img4', 'miembro1_imagen', 'miembro2_imagen', 'miembro3_imagen', 'miembro4_imagen'];
-    $contenido['equipo'] = array_filter($contenido['equipo'], function($clave) use ($duplicados) {
-        return !in_array($clave, $duplicados);
+    $contenido['equipo'] = array_filter($contenido['equipo'], function($clave) use ($duplicados_equipo) {
+        return !in_array($clave, $duplicados_equipo);
+    }, ARRAY_FILTER_USE_KEY);
+}
+
+if (isset($contenido['proyectos'])) {
+    $contenido['proyectos'] = array_filter($contenido['proyectos'], function($clave) use ($duplicados_proyectos) {
+        return !in_array($clave, $duplicados_proyectos);
     }, ARRAY_FILTER_USE_KEY);
 }
 
@@ -131,6 +141,7 @@ $primeraSeccion = $secciones[0] ?? 'hero';
 </head>
 <body>
 <div class="container">
+    <!-- Header -->
     <div class="header-admin">
         <div>
             <h1>⚙️ Panel de Administración</h1>
@@ -142,8 +153,10 @@ $primeraSeccion = $secciones[0] ?? 'hero';
         </div>
     </div>
 
+    <!-- Mensajes -->
     <div id="mensajeGlobal" class="mensaje"></div>
 
+    <!-- Tabs -->
     <div class="tabs" id="tabsContainer">
         <?php foreach ($secciones as $index => $seccion): ?>
             <div class="tab <?php echo $index === 0 ? 'active' : ''; ?>" data-tab="<?php echo $seccion; ?>">
@@ -152,6 +165,7 @@ $primeraSeccion = $secciones[0] ?? 'hero';
         <?php endforeach; ?>
     </div>
 
+    <!-- Contenido de Tabs -->
     <?php foreach ($secciones as $index => $seccion): ?>
         <div class="tab-content <?php echo $index === 0 ? 'active' : ''; ?>" id="tab-<?php echo $seccion; ?>">
             <div class="seccion-card">
@@ -233,7 +247,9 @@ $primeraSeccion = $secciones[0] ?? 'hero';
 </div>
 
 <script>
-    // Persistencia de pestañas
+    // ============================================================
+    // 1. PERSISTENCIA DE PESTAÑAS (sessionStorage)
+    // ============================================================
     (function() {
         const activeTab = sessionStorage.getItem('activeTab') || '<?php echo $primeraSeccion; ?>';
         document.querySelectorAll('.tab').forEach(tab => {
@@ -262,12 +278,16 @@ $primeraSeccion = $secciones[0] ?? 'hero';
         });
     })();
 
-    // Envío asíncrono
+    // ============================================================
+    // 2. ENVÍO ASÍNCRONO (AJAX) DE FORMULARIOS
+    // ============================================================
     document.querySelectorAll('.ajax-form').forEach(form => {
         form.addEventListener('submit', function(e) {
             e.preventDefault();
             const formData = new FormData(this);
             const action = formData.get('action');
+            const seccion = formData.get('seccion');
+            const clave = formData.get('clave');
             const campo = this.closest('.campo');
             const statusDiv = campo.querySelector('.status');
 
@@ -316,6 +336,9 @@ $primeraSeccion = $secciones[0] ?? 'hero';
         });
     });
 
+    // ============================================================
+    // 3. MENSAJE GLOBAL
+    // ============================================================
     function mostrarMensaje(texto, tipo) {
         const msg = document.getElementById('mensajeGlobal');
         msg.textContent = texto;
@@ -326,6 +349,9 @@ $primeraSeccion = $secciones[0] ?? 'hero';
         }, 5000);
     }
 
+    // ============================================================
+    // 4. SELECTOR DE IMÁGENES (MODAL)
+    // ============================================================
     let currentSeccion = '';
     let currentClave = '';
 

@@ -1,15 +1,11 @@
 <?php
 require_once 'config.php';
 
-// --- Funciones de base de datos con depuración ---
+// --- Funciones de base de datos ---
 function getContent($seccion, $clave, $default = '') {
     global $conn;
     $result = pg_query_params($conn, 'SELECT valor FROM contenido WHERE seccion = $1 AND clave = $2', [$seccion, $clave]);
-    if (!$result) {
-        error_log("Error en getContent: " . pg_last_error($conn));
-        return $default;
-    }
-    if (pg_num_rows($result) > 0) {
+    if ($result && pg_num_rows($result) > 0) {
         $row = pg_fetch_assoc($result);
         return $row['valor'];
     }
@@ -26,7 +22,7 @@ function getSection($seccion) {
     global $conn;
     $result = pg_query_params($conn, 'SELECT clave, valor FROM contenido WHERE seccion = $1', [$seccion]);
     $data = [];
-    if ($result && pg_num_rows($result) > 0) {
+    if ($result) {
         while ($row = pg_fetch_assoc($result)) {
             $data[$row['clave']] = $row['valor'];
         }
@@ -38,7 +34,7 @@ function getAllContent() {
     global $conn;
     $result = pg_query($conn, 'SELECT seccion, clave, valor FROM contenido ORDER BY seccion, clave');
     $data = [];
-    if ($result && pg_num_rows($result) > 0) {
+    if ($result) {
         while ($row = pg_fetch_assoc($result)) {
             $data[$row['seccion']][$row['clave']] = $row['valor'];
         }
@@ -98,24 +94,32 @@ function uploadToSupabase($file, $filename = null) {
     if ($file['error'] !== UPLOAD_ERR_OK) {
         return ['error' => 'Error al subir el archivo: ' . $file['error']];
     }
+    
     if ($file['size'] > MAX_FILE_SIZE) {
         return ['error' => 'El archivo excede el tamaño máximo permitido (5 MB).'];
     }
+    
     $finfo = finfo_open(FILEINFO_MIME_TYPE);
     $mimeType = finfo_file($finfo, $file['tmp_name']);
     finfo_close($finfo);
+    
     $allowed = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
     if (!in_array($mimeType, $allowed)) {
         return ['error' => 'Formato de imagen no permitido. Usa JPG, PNG, GIF o WEBP.'];
     }
+    
     $ext = pathinfo($file['name'], PATHINFO_EXTENSION);
     $filename = $filename ?: uniqid() . '.' . $ext;
     $filename = preg_replace('/[^a-zA-Z0-9_.-]/', '_', $filename);
+    
     $fileContent = file_get_contents($file['tmp_name']);
     if ($fileContent === false) {
         return ['error' => 'No se pudo leer el archivo.'];
     }
+    
+    // Endpoint correcto para subir: /storage/v1/object/{bucket}/{filename}
     $url = SUPABASE_URL . '/storage/v1/object/' . SUPABASE_BUCKET . '/' . $filename;
+    
     $ch = curl_init($url);
     curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'POST');
     curl_setopt($ch, CURLOPT_POSTFIELDS, $fileContent);
@@ -126,19 +130,31 @@ function uploadToSupabase($file, $filename = null) {
         'Authorization: Bearer ' . SUPABASE_ANON_KEY,
         'x-upsert: true'
     ]);
+    
     $response = curl_exec($ch);
     $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $curlError = curl_error($ch);
     curl_close($ch);
+    
     if ($httpCode === 200 || $httpCode === 201) {
-        return ['success' => SUPABASE_STORAGE_URL . $filename];
+        $publicUrl = SUPABASE_STORAGE_URL . $filename;
+        return ['success' => $publicUrl];
     } else {
-        return ['error' => "Error al subir. Código: $httpCode - " . substr($response, 0, 200)];
+        $errorMsg = "Error al subir a Supabase Storage. Código: $httpCode";
+        if ($curlError) {
+            $errorMsg .= " - cURL Error: $curlError";
+        } else {
+            $errorMsg .= " - Respuesta: " . substr($response, 0, 200);
+        }
+        error_log("Supabase upload error: " . $errorMsg);
+        return ['error' => $errorMsg];
     }
 }
 
 // --- Listar imágenes del bucket ---
 function listImagesFromBucket() {
     $url = SUPABASE_URL . '/storage/v1/object/list/' . SUPABASE_BUCKET;
+    
     $ch = curl_init($url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_HTTPHEADER, [
@@ -148,6 +164,7 @@ function listImagesFromBucket() {
     $response = curl_exec($ch);
     $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
     curl_close($ch);
+    
     if ($httpCode === 200) {
         $files = json_decode($response, true);
         if (is_array($files)) {

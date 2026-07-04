@@ -1,5 +1,5 @@
 <?php
-// config.php - Conexión a Supabase con depuración
+// config.php - Configuración general y seguridad
 
 // --- Conexión a la base de datos (PostgreSQL) ---
 $uri = getenv('SUPABASE_URI') ?: 'postgresql://postgres.olcfippgkuhjvssnlxvn:Seguridad.123@aws-1-us-east-2.pooler.supabase.com:5432/postgres';
@@ -10,13 +10,9 @@ $dbname = ltrim($parsed['path'], '/');
 $user = $parsed['user'];
 $pass = $parsed['pass'];
 
-// Intentar conectar
 $conn = pg_connect("host=$host port=$port dbname=$dbname user=$user password=$pass");
-
 if (!$conn) {
-    // Mostrar error en pantalla (para depuración)
-    $error_msg = "❌ Error de conexión a la base de datos: " . pg_last_error();
-    die("<div style='background: #ff6b6b; color: #fff; padding: 1rem; text-align: center; font-family: sans-serif;'>$error_msg</div>");
+    die("❌ Error de conexión a la base de datos: " . pg_last_error());
 }
 pg_query($conn, "SET search_path TO public;");
 

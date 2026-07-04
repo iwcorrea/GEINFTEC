@@ -1,9 +1,13 @@
 <?php
-require_once 'funciones.php';
+// ============================================================
+// CONFIGURACIÓN DE CSP (desde PHP para evitar bloqueos)
+// ============================================================
+header("Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https: data:; style-src 'self' 'unsafe-inline' https:; img-src 'self' data: https:; font-src 'self' data: https:; connect-src 'self' https:;");
 
 // ============================================================
-// OBTENER TODOS LOS DATOS DE LA BD
+// INCLUIR FUNCIONES Y OBTENER DATOS
 // ============================================================
+require_once 'funciones.php';
 
 // --- Hero ---
 $hero_titulo = getContent('hero', 'titulo', 'Innovación que');
@@ -14,6 +18,7 @@ $hero_frases_array = json_decode($hero_frases, true) ?: ["Ingeniería de vanguar
 // --- Servicios ---
 $servicios_titulo = getContent('servicios', 'titulo', 'Nuestros');
 $servicios_sub = getContent('servicios', 'subtitulo', 'Soluciones integrales que combinan ingeniería de calidad con tecnología de punta.');
+
 $servicios_items = [];
 for ($i = 1; $i <= 6; $i++) {
     $servicios_items[] = [
@@ -26,6 +31,7 @@ for ($i = 1; $i <= 6; $i++) {
 // --- Proyectos ---
 $proyectos_titulo = getContent('proyectos', 'titulo', 'Proyectos');
 $proyectos_sub = getContent('proyectos', 'subtitulo', 'Obras y soluciones que reflejan nuestra excelencia y compromiso.');
+
 $proyectos_items = [];
 for ($i = 1; $i <= 3; $i++) {
     $proyectos_items[] = [
@@ -35,21 +41,22 @@ for ($i = 1; $i <= 3; $i++) {
     ];
 }
 
-// --- Tecnologías ---
+// --- Tecnologías (con iconos personalizados) ---
 $tecnologias_titulo = getContent('tecnologias', 'titulo', 'Tecnologías');
 $tecnologias_sub = getContent('tecnologias', 'subtitulo', 'Herramientas y plataformas con las que trabajamos día a día.');
-$tecnologias_raw = getContent('tecnologias', 'lista', '[{"icon":"⚛️","name":"React"},{"icon":"🟢","name":"Node.js"},{"icon":"🐍","name":"Python"},{"icon":"☁️","name":"AWS"},{"icon":"🐳","name":"Docker"},{"icon":"🗄️","name":"PostgreSQL"},{"icon":"📱","name":"Flutter"},{"icon":"🔷","name":"TypeScript"}]');
-$tecnologias_array = json_decode($tecnologias_raw, true);
-if (!is_array($tecnologias_array)) {
+$tecnologias_lista = getContent('tecnologias', 'lista', '{"React":"⚛️","Node.js":"🟢","Python":"🐍","AWS":"☁️","Docker":"🐳","PostgreSQL":"🗄️","Flutter":"📱","TypeScript":"🔷"}');
+$tecnologias_array = json_decode($tecnologias_lista, true);
+if (!is_array($tecnologias_array) || empty($tecnologias_array)) {
+    // Fallback: lista simple si no es JSON
     $tecnologias_array = [
-        ["icon" => "⚛️", "name" => "React"],
-        ["icon" => "🟢", "name" => "Node.js"],
-        ["icon" => "🐍", "name" => "Python"],
-        ["icon" => "☁️", "name" => "AWS"],
-        ["icon" => "🐳", "name" => "Docker"],
-        ["icon" => "🗄️", "name" => "PostgreSQL"],
-        ["icon" => "📱", "name" => "Flutter"],
-        ["icon" => "🔷", "name" => "TypeScript"]
+        'React' => '⚛️',
+        'Node.js' => '🟢',
+        'Python' => '🐍',
+        'AWS' => '☁️',
+        'Docker' => '🐳',
+        'PostgreSQL' => '🗄️',
+        'Flutter' => '📱',
+        'TypeScript' => '🔷'
     ];
 }
 
@@ -70,6 +77,7 @@ unset($stat);
 // --- Equipo ---
 $equipo_titulo = getContent('equipo', 'titulo', 'Nuestro');
 $equipo_sub = getContent('equipo', 'subtitulo', 'Profesionales apasionados por la innovación y la excelencia.');
+
 $equipo_items = [];
 for ($i = 1; $i <= 4; $i++) {
     $equipo_items[] = [
@@ -105,8 +113,6 @@ $footer_copyright = getContent('footer', 'copyright', '&copy; 2026 GEINFTEC S.A.
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>GEINFTEC S.A.S. – Ingeniería, Construcción y Desarrollo de Software</title>
-    <!-- CSP mediante meta tag (compatible con Render) -->
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https:; style-src 'self' 'unsafe-inline' https:; img-src 'self' data: https:; font-src 'self' data: https:; connect-src 'self' https:;">
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
@@ -140,13 +146,13 @@ $footer_copyright = getContent('footer', 'copyright', '&copy; 2026 GEINFTEC S.A.
         <canvas id="hero-canvas"></canvas>
         <div class="container hero-content">
             <h1 class="hero-title">
-                <?php echo htmlspecialchars($hero_titulo); ?><br />
+                <?php echo $hero_titulo; ?><br />
                 <span class="highlight">construye el futuro</span>
             </h1>
             <div style="font-size: 2rem; font-weight: 600; margin-bottom: 0.5rem;">
                 <span id="rotating-text" data-phrases='<?php echo json_encode($hero_frases_array); ?>'></span>
             </div>
-            <p class="hero-sub"><?php echo htmlspecialchars($hero_subtitulo); ?></p>
+            <p class="hero-sub"><?php echo $hero_subtitulo; ?></p>
             <a href="#contacto" class="btn">Contáctanos</a>
             <a href="#proyectos" class="btn btn-outline" style="margin-left: 1rem;">Ver proyectos</a>
         </div>
@@ -155,14 +161,14 @@ $footer_copyright = getContent('footer', 'copyright', '&copy; 2026 GEINFTEC S.A.
     <!-- SERVICIOS -->
     <section id="servicios">
         <div class="container">
-            <h2 class="section-title fade-up"><?php echo htmlspecialchars($servicios_titulo); ?> <span>Servicios</span></h2>
-            <p class="section-sub fade-up"><?php echo htmlspecialchars($servicios_sub); ?></p>
+            <h2 class="section-title fade-up"><?php echo $servicios_titulo; ?> <span>Servicios</span></h2>
+            <p class="section-sub fade-up"><?php echo $servicios_sub; ?></p>
             <div class="grid-3">
                 <?php foreach ($servicios_items as $item): ?>
                 <div class="card service-card fade-up">
-                    <span class="icon"><?php echo htmlspecialchars($item['icon']); ?></span>
-                    <h3><?php echo htmlspecialchars($item['titulo']); ?></h3>
-                    <p><?php echo htmlspecialchars($item['desc']); ?></p>
+                    <span class="icon"><?php echo $item['icon']; ?></span>
+                    <h3><?php echo $item['titulo']; ?></h3>
+                    <p><?php echo $item['desc']; ?></p>
                 </div>
                 <?php endforeach; ?>
             </div>
@@ -172,15 +178,15 @@ $footer_copyright = getContent('footer', 'copyright', '&copy; 2026 GEINFTEC S.A.
     <!-- PROYECTOS -->
     <section id="proyectos" style="background: rgba(0,0,0,0.2);">
         <div class="container">
-            <h2 class="section-title fade-up"><?php echo htmlspecialchars($proyectos_titulo); ?> <span>Destacados</span></h2>
-            <p class="section-sub fade-up"><?php echo htmlspecialchars($proyectos_sub); ?></p>
+            <h2 class="section-title fade-up"><?php echo $proyectos_titulo; ?> <span>Destacados</span></h2>
+            <p class="section-sub fade-up"><?php echo $proyectos_sub; ?></p>
             <div class="grid-3">
                 <?php foreach ($proyectos_items as $item): ?>
                 <div class="card project-card fade-up">
-                    <img src="<?php echo htmlspecialchars($item['img']); ?>" alt="<?php echo htmlspecialchars($item['titulo']); ?>" loading="lazy" />
+                    <img src="<?php echo $item['img']; ?>" alt="<?php echo $item['titulo']; ?>" loading="lazy" />
                     <div class="content">
-                        <h3><?php echo htmlspecialchars($item['titulo']); ?></h3>
-                        <p><?php echo htmlspecialchars($item['desc']); ?></p>
+                        <h3><?php echo $item['titulo']; ?></h3>
+                        <p><?php echo $item['desc']; ?></p>
                         <a href="#" class="btn btn-outline" style="padding:0.4rem 1.2rem; font-size:0.9rem;">Ver más</a>
                     </div>
                 </div>
@@ -192,14 +198,11 @@ $footer_copyright = getContent('footer', 'copyright', '&copy; 2026 GEINFTEC S.A.
     <!-- TECNOLOGÍAS -->
     <section id="tecnologias">
         <div class="container">
-            <h2 class="section-title fade-up"><?php echo htmlspecialchars($tecnologias_titulo); ?> <span>que impulsamos</span></h2>
-            <p class="section-sub fade-up"><?php echo htmlspecialchars($tecnologias_sub); ?></p>
+            <h2 class="section-title fade-up"><?php echo $tecnologias_titulo; ?> <span>que impulsamos</span></h2>
+            <p class="section-sub fade-up"><?php echo $tecnologias_sub; ?></p>
             <div class="tech-grid fade-up">
-                <?php foreach ($tecnologias_array as $tech): ?>
-                <div class="tech-item">
-                    <span class="icon"><?php echo htmlspecialchars($tech['icon']); ?></span>
-                    <?php echo htmlspecialchars($tech['name']); ?>
-                </div>
+                <?php foreach ($tecnologias_array as $nombre => $icono): ?>
+                <div class="tech-item"><span class="icon"><?php echo $icono; ?></span> <?php echo $nombre; ?></div>
                 <?php endforeach; ?>
             </div>
         </div>
@@ -208,13 +211,13 @@ $footer_copyright = getContent('footer', 'copyright', '&copy; 2026 GEINFTEC S.A.
     <!-- ESTADÍSTICAS -->
     <section id="estadisticas" style="background: rgba(0,0,0,0.15);">
         <div class="container">
-            <h2 class="section-title fade-up"><?php echo htmlspecialchars($estadisticas_titulo); ?> <span>números</span></h2>
-            <p class="section-sub fade-up"><?php echo htmlspecialchars($estadisticas_sub); ?></p>
+            <h2 class="section-title fade-up"><?php echo $estadisticas_titulo; ?> <span>números</span></h2>
+            <p class="section-sub fade-up"><?php echo $estadisticas_sub; ?></p>
             <div class="grid-4">
                 <?php foreach ($stats as $stat): ?>
                 <div class="stat-card fade-up">
-                    <div class="stat-number" data-count="<?php echo htmlspecialchars($stat['valor']); ?>">0</div>
-                    <div class="stat-label"><?php echo htmlspecialchars($stat['label']); ?></div>
+                    <div class="stat-number" data-count="<?php echo $stat['valor']; ?>">0</div>
+                    <div class="stat-label"><?php echo $stat['label']; ?></div>
                 </div>
                 <?php endforeach; ?>
             </div>
@@ -224,15 +227,15 @@ $footer_copyright = getContent('footer', 'copyright', '&copy; 2026 GEINFTEC S.A.
     <!-- EQUIPO -->
     <section id="equipo">
         <div class="container">
-            <h2 class="section-title fade-up"><?php echo htmlspecialchars($equipo_titulo); ?> <span>Equipo</span></h2>
-            <p class="section-sub fade-up"><?php echo htmlspecialchars($equipo_sub); ?></p>
+            <h2 class="section-title fade-up"><?php echo $equipo_titulo; ?> <span>Equipo</span></h2>
+            <p class="section-sub fade-up"><?php echo $equipo_sub; ?></p>
             <div class="grid-4">
                 <?php foreach ($equipo_items as $item): ?>
                 <div class="team-card fade-up">
-                    <img src="<?php echo htmlspecialchars($item['img']); ?>" alt="<?php echo htmlspecialchars($item['nombre']); ?>" loading="lazy" />
-                    <h4><?php echo htmlspecialchars($item['nombre']); ?></h4>
-                    <div class="role"><?php echo htmlspecialchars($item['cargo']); ?></div>
-                    <div class="bio"><?php echo htmlspecialchars($item['bio']); ?></div>
+                    <img src="<?php echo $item['img']; ?>" alt="<?php echo $item['nombre']; ?>" loading="lazy" />
+                    <h4><?php echo $item['nombre']; ?></h4>
+                    <div class="role"><?php echo $item['cargo']; ?></div>
+                    <div class="bio"><?php echo $item['bio']; ?></div>
                 </div>
                 <?php endforeach; ?>
             </div>
@@ -242,8 +245,8 @@ $footer_copyright = getContent('footer', 'copyright', '&copy; 2026 GEINFTEC S.A.
     <!-- CONTACTO -->
     <section id="contacto" style="background: rgba(0,0,0,0.2);">
         <div class="container">
-            <h2 class="section-title fade-up"><?php echo htmlspecialchars($contacto_titulo); ?> <span>ahora</span></h2>
-            <p class="section-sub fade-up"><?php echo htmlspecialchars($contacto_sub); ?></p>
+            <h2 class="section-title fade-up"><?php echo $contacto_titulo; ?> <span>ahora</span></h2>
+            <p class="section-sub fade-up"><?php echo $contacto_sub; ?></p>
             <div class="contact-grid">
                 <div class="fade-up">
                     <form class="contact-form" id="contactForm" novalidate>
@@ -256,12 +259,12 @@ $footer_copyright = getContent('footer', 'copyright', '&copy; 2026 GEINFTEC S.A.
                     </form>
                 </div>
                 <div class="contact-info fade-up">
-                    <div class="item"><span class="icon">📍</span> <?php echo htmlspecialchars($contacto_direccion); ?></div>
-                    <div class="item"><span class="icon">📞</span> <?php echo htmlspecialchars($contacto_telefono); ?></div>
-                    <div class="item"><span class="icon">✉️</span> <?php echo htmlspecialchars($contacto_email); ?></div>
-                    <div class="item"><span class="icon">🕒</span> <?php echo htmlspecialchars($contacto_horario); ?></div>
+                    <div class="item"><span class="icon">📍</span> <?php echo $contacto_direccion; ?></div>
+                    <div class="item"><span class="icon">📞</span> <?php echo $contacto_telefono; ?></div>
+                    <div class="item"><span class="icon">✉️</span> <?php echo $contacto_email; ?></div>
+                    <div class="item"><span class="icon">🕒</span> <?php echo $contacto_horario; ?></div>
                     <div class="map-container">
-                        <iframe src="<?php echo htmlspecialchars($contacto_mapa); ?>" allowfullscreen loading="lazy"></iframe>
+                        <iframe src="<?php echo $contacto_mapa; ?>" allowfullscreen loading="lazy"></iframe>
                     </div>
                 </div>
             </div>
@@ -274,12 +277,12 @@ $footer_copyright = getContent('footer', 'copyright', '&copy; 2026 GEINFTEC S.A.
             <div class="footer-grid">
                 <div>
                     <div class="logo" style="font-size:1.8rem; margin-bottom:0.5rem;">GEINFTEC <span>S.A.S.</span></div>
-                    <p style="color:var(--text-muted); max-width:300px;"><?php echo htmlspecialchars($footer_texto); ?></p>
+                    <p style="color:var(--text-muted); max-width:300px;"><?php echo $footer_texto; ?></p>
                     <div class="socials" style="margin-top:1rem;">
-                        <a href="<?php echo htmlspecialchars($social_linkedin); ?>" aria-label="LinkedIn">🔗</a>
-                        <a href="<?php echo htmlspecialchars($social_twitter); ?>" aria-label="Twitter">🐦</a>
-                        <a href="<?php echo htmlspecialchars($social_instagram); ?>" aria-label="Instagram">📸</a>
-                        <a href="<?php echo htmlspecialchars($social_youtube); ?>" aria-label="YouTube">▶️</a>
+                        <a href="<?php echo $social_linkedin; ?>" aria-label="LinkedIn">🔗</a>
+                        <a href="<?php echo $social_twitter; ?>" aria-label="Twitter">🐦</a>
+                        <a href="<?php echo $social_instagram; ?>" aria-label="Instagram">📸</a>
+                        <a href="<?php echo $social_youtube; ?>" aria-label="YouTube">▶️</a>
                     </div>
                 </div>
                 <div>
@@ -302,7 +305,7 @@ $footer_copyright = getContent('footer', 'copyright', '&copy; 2026 GEINFTEC S.A.
                 </div>
             </div>
             <div class="copyright">
-                <?php echo htmlspecialchars($footer_copyright); ?>
+                <?php echo $footer_copyright; ?>
                 <br>
                 <span style="font-size:0.8rem; opacity:0.5;">
                     <a href="login.php" style="color: #b0b8d1; text-decoration:none;">🔐 Admin</a>
