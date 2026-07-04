@@ -1,10 +1,13 @@
 <?php
 // ============================================================
-// CONFIGURACIÓN DE ERRORES
+// CONFIGURACIÓN DE ERRORES Y CSP (desde PHP)
 // ============================================================
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
+
+// Establecer CSP desde PHP (prioridad sobre el servidor)
+header("Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https: data:; style-src 'self' 'unsafe-inline' https:; img-src 'self' data: https:; font-src 'self' data: https:; connect-src 'self' https:;");
 
 // ============================================================
 // INCLUIR FUNCIONES Y OBTENER DATOS
@@ -112,8 +115,7 @@ try {
 } catch (Exception $e) {
     $db_error = true;
     error_log("Error en index.php: " . $e->getMessage());
-    // Usar valores por defecto (ya definidos más abajo)
-    // Simplemente asignamos valores por defecto
+    // Valores por defecto (se definen más abajo)
     $hero_titulo = 'Innovación que';
     $hero_subtitulo = 'Cargando contenido...';
     $hero_frases_array = ["Ingeniería de vanguardia", "Construcción inteligente", "Software que transforma"];
@@ -167,7 +169,7 @@ try {
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>GEINFTEC S.A.S. – Ingeniería, Construcción y Desarrollo de Software</title>
-    <!-- CSP ELIMINADO COMPLETAMENTE -->
+    <!-- SIN META CSP (se maneja desde PHP) -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
