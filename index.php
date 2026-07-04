@@ -1,15 +1,25 @@
 <?php
-// Activar reporte de errores para depuración (en producción, desactivar)
+// ============================================================
+// CONFIGURACIÓN DE SEGURIDAD Y ERRORES
+// ============================================================
+// Activar reporte de errores para depuración (desactivar en producción)
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
+// Cabeceras de seguridad (CSP ajustada para permitir eval y setTimeout con string)
+header("Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https:; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data: https:; connect-src 'self' https:;");
+header("X-Frame-Options: DENY");
+header("X-Content-Type-Options: nosniff");
+header("Referrer-Policy: strict-origin-when-cross-origin");
+
+// ============================================================
+// INCLUIR FUNCIONES Y OBTENER DATOS
+// ============================================================
 require_once 'funciones.php';
 
 try {
-    // ============================================================
-    // OBTENER TODOS LOS DATOS DE LA BD (con fallbacks)
-    // ============================================================
+    // --- Hero ---
     $hero_titulo = getContent('hero', 'titulo', 'Innovación que');
     $hero_subtitulo = getContent('hero', 'subtitulo', 'Ingeniería, construcción y desarrollo de software con visión de vanguardia. Transformamos ideas en realidades digitales y físicas.');
     $hero_frases = getContent('hero', 'frases', '["Ingeniería de vanguardia","Construcción inteligente","Software que transforma"]');
@@ -104,11 +114,8 @@ try {
     $footer_copyright = getContent('footer', 'copyright', '&copy; 2026 GEINFTEC S.A.S. Todos los derechos reservados. | Diseñado con 💙 en Colombia.');
 
 } catch (Exception $e) {
-    // Si ocurre un error en la obtención de datos, mostramos un mensaje y usamos valores por defecto
-    $error_msg = "Error al cargar los datos: " . $e->getMessage();
-    // Puedes registrar el error en un log
-    error_log($error_msg);
-    // Definimos variables por defecto para que la página no se rompa
+    // Si ocurre un error, registrarlo y usar valores por defecto
+    error_log("Error en index.php: " . $e->getMessage());
     $hero_titulo = 'Innovación que';
     $hero_subtitulo = 'Cargando contenido...';
     $hero_frases_array = ["Ingeniería de vanguardia", "Construcción inteligente", "Software que transforma"];
@@ -154,8 +161,6 @@ try {
     $social_youtube = '#';
     $footer_texto = 'GEINFTEC S.A.S. - Ingeniería y tecnología.';
     $footer_copyright = '&copy; 2026 GEINFTEC S.A.S. Todos los derechos reservados.';
-    // Mostrar mensaje de error visible (opcional)
-    echo '<div style="background:#ff6b6b;color:#fff;padding:1rem;text-align:center;">⚠️ ' . htmlspecialchars($error_msg) . '</div>';
 }
 ?>
 <!DOCTYPE html>
