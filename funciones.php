@@ -89,7 +89,7 @@ function registerLoginAttempt($ip, $success) {
     }
 }
 
-// --- Subida a Supabase Storage (con logging para depuración) ---
+// --- Subida a Supabase Storage (CORREGIDA) ---
 function uploadToSupabase($file, $filename = null) {
     // Validar archivo
     if ($file['error'] !== UPLOAD_ERR_OK) {
@@ -118,8 +118,11 @@ function uploadToSupabase($file, $filename = null) {
         return ['error' => 'No se pudo leer el archivo.'];
     }
     
-    // Endpoint correcto: /storage/v1/object/bucket/nombre
+    // --- ENDPOINT CORRECTO: SIN "/public/" en la URL de subida ---
+    // La URL debe ser: https://[TU-PROYECTO].supabase.co/storage/v1/object/[BUCKET]/[ARCHIVO]
     $url = SUPABASE_URL . '/storage/v1/object/' . SUPABASE_BUCKET . '/' . $filename;
+    
+    // Agregar la API Key como query param como respaldo
     $url .= '?apikey=' . urlencode(SUPABASE_ANON_KEY);
     
     $ch = curl_init($url);
@@ -135,15 +138,23 @@ function uploadToSupabase($file, $filename = null) {
     
     $response = curl_exec($ch);
     $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $curlError = curl_error($ch);
     curl_close($ch);
     
-    if ($httpCode === 200 || $httpCode === 201) {
-        $publicUrl = SUPABASE_STORAGE_URL . $filename;
-        return ['success' => $publicUrl];
-    } else {
-        // Log del error para depuración
-        error_log("Supabase upload error: HTTP $httpCode - $response");
-        return ['error' => "Error al subir a Supabase Storage. Código: $httpCode - " . substr($response, 0, 200)];
+    // Depuración: Registra el error detallado en los logs de Render
+    if ($httpCode !== 200 && $httpCode !== 201) {
+        $errorMsg = "Error al subir a Supabase Storage. Código: $httpCode";
+        if ($curlError) {
+            $errorMsg .= " - cURL Error: $curlError";
+        } else {
+            $errorMsg .= " - Respuesta: " . substr($response, 0, 200);
+        }
+        error_log("Supabase upload error: " . $errorMsg);
+        return ['error' => $errorMsg];
     }
+    
+    // Si la subida fue exitosa, la URL pública SÍ lleva "/public/"
+    $publicUrl = SUPABASE_STORAGE_URL . $filename;
+    return ['success' => $publicUrl];
 }
 ?>
