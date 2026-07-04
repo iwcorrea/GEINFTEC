@@ -1,10 +1,15 @@
 <?php
 require_once 'config.php';
 
+// --- Funciones de base de datos con depuración ---
 function getContent($seccion, $clave, $default = '') {
     global $conn;
     $result = pg_query_params($conn, 'SELECT valor FROM contenido WHERE seccion = $1 AND clave = $2', [$seccion, $clave]);
-    if ($result && pg_num_rows($result) > 0) {
+    if (!$result) {
+        error_log("Error en getContent: " . pg_last_error($conn));
+        return $default;
+    }
+    if (pg_num_rows($result) > 0) {
         $row = pg_fetch_assoc($result);
         return $row['valor'];
     }
@@ -21,7 +26,7 @@ function getSection($seccion) {
     global $conn;
     $result = pg_query_params($conn, 'SELECT clave, valor FROM contenido WHERE seccion = $1', [$seccion]);
     $data = [];
-    if ($result) {
+    if ($result && pg_num_rows($result) > 0) {
         while ($row = pg_fetch_assoc($result)) {
             $data[$row['clave']] = $row['valor'];
         }
@@ -33,7 +38,7 @@ function getAllContent() {
     global $conn;
     $result = pg_query($conn, 'SELECT seccion, clave, valor FROM contenido ORDER BY seccion, clave');
     $data = [];
-    if ($result) {
+    if ($result && pg_num_rows($result) > 0) {
         while ($row = pg_fetch_assoc($result)) {
             $data[$row['seccion']][$row['clave']] = $row['valor'];
         }
@@ -41,6 +46,7 @@ function getAllContent() {
     return $data;
 }
 
+// --- Seguridad: CSRF ---
 function generateCSRFToken() {
     if (empty($_SESSION['csrf_token'])) {
         $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
@@ -52,6 +58,7 @@ function verifyCSRFToken($token) {
     return isset($_SESSION['csrf_token']) && hash_equals($_SESSION['csrf_token'], $token);
 }
 
+// --- Seguridad: Rate limiting ---
 function checkLoginAttempts($ip) {
     global $conn;
     $result = pg_query_params($conn, 'SELECT attempts, last_attempt FROM login_attempts WHERE ip = $1', [$ip]);
@@ -86,6 +93,7 @@ function registerLoginAttempt($ip, $success) {
     }
 }
 
+// --- Subida a Supabase Storage ---
 function uploadToSupabase($file, $filename = null) {
     if ($file['error'] !== UPLOAD_ERR_OK) {
         return ['error' => 'Error al subir el archivo: ' . $file['error']];
@@ -98,7 +106,7 @@ function uploadToSupabase($file, $filename = null) {
     finfo_close($finfo);
     $allowed = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
     if (!in_array($mimeType, $allowed)) {
-        return ['error' => 'Formato de imagen no permitido.'];
+        return ['error' => 'Formato de imagen no permitido. Usa JPG, PNG, GIF o WEBP.'];
     }
     $ext = pathinfo($file['name'], PATHINFO_EXTENSION);
     $filename = $filename ?: uniqid() . '.' . $ext;
@@ -128,6 +136,7 @@ function uploadToSupabase($file, $filename = null) {
     }
 }
 
+// --- Listar imágenes del bucket ---
 function listImagesFromBucket() {
     $url = SUPABASE_URL . '/storage/v1/object/list/' . SUPABASE_BUCKET;
     $ch = curl_init($url);
