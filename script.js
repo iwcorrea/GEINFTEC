@@ -141,7 +141,6 @@
             setTimeout(typeEffect, typeSpeed);
         }
 
-        // Iniciar después de un breve retraso para evitar conflictos
         setTimeout(typeEffect, 500);
     }
 
@@ -235,23 +234,6 @@
         }, 25);
     }
 
-    // Observar contadores que no fueron capturados por el observer inicial
-    document.querySelectorAll('.stat-number').forEach(function(el) {
-        const parent = el.closest('.stat-card');
-        if (parent) {
-            // Re-observar para asegurar
-            const observer = new IntersectionObserver(function(entries) {
-                entries.forEach(function(entry) {
-                    if (entry.isIntersecting && !el.dataset.animated) {
-                        animateCounter(el);
-                        el.dataset.animated = 'true';
-                    }
-                });
-            }, { threshold: 0.2 });
-            observer.observe(parent);
-        }
-    });
-
     // ============================================================
     // 8. VALIDACIÓN FORMULARIO CONTACTO
     // ============================================================
@@ -310,7 +292,7 @@
     }
 
     // ============================================================
-    // 10. LAZY LOADING para imágenes (Intersection Observer)
+    // 10. LAZY LOADING para imágenes
     // ============================================================
     if ('IntersectionObserver' in window) {
         const lazyObserver = new IntersectionObserver(function(entries) {
@@ -340,60 +322,6 @@
             }
         });
     }
-
-    // ============================================================
-    // 12. SOPORTE PARA ADMIN PANEL (selector de imágenes)
-    // ============================================================
-    // Funciones globales para el modal de imágenes (usadas en admin.php)
-    window.openImageSelector = function(seccion, clave) {
-        // Solo funciona en admin.php
-        const modal = document.getElementById('imageModal');
-        if (modal) {
-            window.currentSeccion = seccion;
-            window.currentClave = clave;
-            modal.classList.add('active');
-        }
-    };
-
-    window.closeImageSelector = function() {
-        const modal = document.getElementById('imageModal');
-        if (modal) {
-            modal.classList.remove('active');
-        }
-    };
-
-    window.selectImage = function(url) {
-        window.closeImageSelector();
-        const campos = document.querySelectorAll('.campo');
-        for (let campo of campos) {
-            const label = campo.querySelector('label');
-            if (label && label.textContent.trim() === window.currentClave) {
-                const input = campo.querySelector('input[name="valor"]');
-                if (input) {
-                    input.value = url;
-                    const preview = campo.querySelector('.preview-img');
-                    if (preview) {
-                        preview.src = url;
-                    }
-                    // Mostrar mensaje
-                    const status = campo.querySelector('.status');
-                    if (status) {
-                        status.textContent = '✅ Imagen seleccionada. Haz clic en "Actualizar URL" para guardar.';
-                        status.style.color = '#00f5d4';
-                    }
-                }
-                break;
-            }
-        }
-    };
-
-    // Cerrar modal al hacer clic fuera del contenido
-    document.addEventListener('click', function(e) {
-        const modal = document.getElementById('imageModal');
-        if (modal && e.target === modal) {
-            window.closeImageSelector();
-        }
-    });
 
     console.log('🚀 GEINFTEC S.A.S. – Sitio web cargado exitosamente.');
 })();
