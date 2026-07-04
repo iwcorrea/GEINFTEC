@@ -2,7 +2,6 @@
 session_start();
 require_once 'funciones.php';
 
-// Verificar autenticación
 if (!isset($_SESSION['admin_logged']) || $_SESSION['admin_logged'] !== true) {
     header('Location: login.php');
     exit;
@@ -12,7 +11,6 @@ $mensaje = '';
 $error = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
-    // Verificar CSRF
     if (!verifyCSRFToken($_POST['csrf_token'] ?? '')) {
         $error = 'Error de seguridad. Intenta nuevamente.';
     } else {
@@ -49,9 +47,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     }
 }
 
-// Generar token CSRF
 $csrf_token = generateCSRFToken();
-
 $contenido = getAllContent();
 $totalCampos = 0;
 foreach ($contenido as $seccion => $datos) {
@@ -66,7 +62,6 @@ foreach ($contenido as $seccion => $datos) {
     <title>Administrador GEINFTEC</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
-        /* (Mismo CSS que antes, sin cambios) */
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: 'Inter', sans-serif; background: #0b132b; color: #f8fafc; padding: 2rem; }
         .container { max-width: 1200px; margin: 0 auto; }
@@ -112,7 +107,6 @@ foreach ($contenido as $seccion => $datos) {
 </head>
 <body>
 <div class="container">
-    <!-- Header -->
     <div class="header-admin">
         <div>
             <h1>⚙️ Panel de Administración</h1>
@@ -124,7 +118,6 @@ foreach ($contenido as $seccion => $datos) {
         </div>
     </div>
 
-    <!-- Bienvenida -->
     <div class="bienvenida">
         <h2>👋 ¡Hola, administrador!</h2>
         <p>
@@ -134,7 +127,6 @@ foreach ($contenido as $seccion => $datos) {
         </p>
     </div>
 
-    <!-- Mensajes -->
     <?php if ($mensaje): ?>
         <div class="mensaje success"><?php echo htmlspecialchars($mensaje); ?></div>
     <?php endif; ?>
@@ -142,7 +134,6 @@ foreach ($contenido as $seccion => $datos) {
         <div class="mensaje error"><?php echo htmlspecialchars($error); ?></div>
     <?php endif; ?>
 
-    <!-- Contenido -->
     <?php foreach ($contenido as $seccion => $datos): ?>
         <div class="seccion">
             <h2>

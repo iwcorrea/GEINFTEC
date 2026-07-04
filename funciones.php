@@ -1,7 +1,7 @@
 <?php
 require_once 'config.php';
 
-// --- Funciones de base de datos (existentes) ---
+// --- Funciones de base de datos ---
 function getContent($seccion, $clave, $default = '') {
     global $conn;
     $result = pg_query_params($conn, 'SELECT valor FROM contenido WHERE seccion = $1 AND clave = $2', [$seccion, $clave]);
@@ -54,7 +54,7 @@ function verifyCSRFToken($token) {
     return isset($_SESSION['csrf_token']) && hash_equals($_SESSION['csrf_token'], $token);
 }
 
-// --- Seguridad: Rate limiting para login ---
+// --- Seguridad: Rate limiting ---
 function checkLoginAttempts($ip) {
     global $conn;
     $result = pg_query_params($conn, 'SELECT attempts, last_attempt FROM login_attempts WHERE ip = $1', [$ip]);
@@ -63,9 +63,8 @@ function checkLoginAttempts($ip) {
         if ($row['attempts'] >= MAX_LOGIN_ATTEMPTS) {
             $timeSince = time() - strtotime($row['last_attempt']);
             if ($timeSince < LOGIN_TIMEOUT) {
-                return false; // Bloqueado
+                return false;
             } else {
-                // Reiniciar intentos
                 pg_query_params($conn, 'DELETE FROM login_attempts WHERE ip = $1', [$ip]);
                 return true;
             }
@@ -90,19 +89,16 @@ function registerLoginAttempt($ip, $success) {
     }
 }
 
-// --- Subida a Supabase Storage (mejorada) ---
+// --- Subida a Supabase Storage ---
 function uploadToSupabase($file, $filename = null) {
-    // Validar archivo
     if ($file['error'] !== UPLOAD_ERR_OK) {
         return ['error' => 'Error al subir el archivo: ' . $file['error']];
     }
     
-    // Validar tamaño
     if ($file['size'] > MAX_FILE_SIZE) {
         return ['error' => 'El archivo excede el tamaño máximo permitido (5 MB).'];
     }
     
-    // Validar tipo MIME real
     $finfo = finfo_open(FILEINFO_MIME_TYPE);
     $mimeType = finfo_file($finfo, $file['tmp_name']);
     finfo_close($finfo);
@@ -112,10 +108,8 @@ function uploadToSupabase($file, $filename = null) {
         return ['error' => 'Formato de imagen no permitido. Usa JPG, PNG, GIF o WEBP.'];
     }
     
-    // Generar nombre único y seguro
     $ext = pathinfo($file['name'], PATHINFO_EXTENSION);
     $filename = $filename ?: uniqid() . '.' . $ext;
-    // Sanitizar nombre
     $filename = preg_replace('/[^a-zA-Z0-9_.-]/', '_', $filename);
     
     $filepath = $file['tmp_name'];
@@ -124,7 +118,6 @@ function uploadToSupabase($file, $filename = null) {
         return ['error' => 'No se pudo leer el archivo.'];
     }
     
-    // Subir a Supabase Storage
     $url = SUPABASE_URL . '/storage/v1/object/' . SUPABASE_BUCKET . '/' . $filename;
     $ch = curl_init($url);
     curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'POST');

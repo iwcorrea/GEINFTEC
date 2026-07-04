@@ -1,6 +1,5 @@
 <?php
-session_start();
-require_once 'funciones.php';
+require_once 'config.php';
 
 // Si ya está logueado, redirigir a admin
 if (isset($_SESSION['admin_logged']) && $_SESSION['admin_logged'] === true) {
@@ -20,27 +19,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && empty($error)) {
     $password = $_POST['password'] ?? '';
     $csrf_token = $_POST['csrf_token'] ?? '';
     
-    // Verificar CSRF
     if (!verifyCSRFToken($csrf_token)) {
         $error = 'Error de seguridad. Intenta nuevamente.';
     } else {
         $admin_pass = getenv('ADMIN_PASSWORD') ?: 'admin123';
         if ($password === $admin_pass) {
-            // Login exitoso
             registerLoginAttempt($ip, true);
             session_regenerate_id(true);
             $_SESSION['admin_logged'] = true;
             header('Location: admin.php');
             exit;
         } else {
-            // Login fallido
             registerLoginAttempt($ip, false);
             $error = 'Contraseña incorrecta.';
         }
     }
 }
 
-// Generar token CSRF
 $csrf_token = generateCSRFToken();
 ?>
 <!DOCTYPE html>
