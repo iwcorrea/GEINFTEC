@@ -41,18 +41,20 @@ for ($i = 1; $i <= 3; $i++) {
     ];
 }
 
-// --- Tecnologías (con iconos personalizados) ---
+// --- Tecnologías (CORREGIDO) ---
 $tecnologias_titulo = getContent('tecnologias', 'titulo', 'Tecnologías');
 $tecnologias_sub = getContent('tecnologias', 'subtitulo', 'Herramientas y plataformas con las que trabajamos día a día.');
 
 // Obtener el JSON de tecnologías (formato: {"React":"⚛️","Node.js":"🟢",...})
-$tecnologias_lista = getContent('tecnologias', 'lista', '{"React":"⚛️","Node.js":"🟢","Python":"🐍","AWS":"☁️","Docker":"🐳","PostgreSQL":"🗄️","Flutter":"📱","TypeScript":"🔷"}');
+$tecnologias_lista = getContent('tecnologias', 'lista', '');
 
-// Decodificar JSON
+// Intentar decodificar el JSON
 $tecnologias_array = json_decode($tecnologias_lista, true);
 
-// Si el JSON no es válido o está vacío, usar valores por defecto
-if (!is_array($tecnologias_array) || empty($tecnologias_array)) {
+// Si el JSON no es válido, está vacío o no es un array asociativo,
+// usar el fallback con los iconos por defecto.
+if (!is_array($tecnologias_array) || empty($tecnologias_array) || !isset($tecnologias_array['React'])) {
+    // Fallback: array asociativo nombre => icono
     $tecnologias_array = [
         'React' => '⚛️',
         'Node.js' => '🟢',
