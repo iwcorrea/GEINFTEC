@@ -69,7 +69,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
 $contenido = getAllContent();
 $csrf_token = generateCSRFToken();
 
-// Ocultar duplicados en equipo y proyectos
+// ============================================================
+// OBTENER MENSAJES DE CONTACTO (para la nueva sección)
+// ============================================================
+$mensajes = [];
+$result = pg_query($conn, "SELECT id, nombre, email, telefono, mensaje, fecha, leido FROM mensajes ORDER BY fecha DESC LIMIT 50");
+if ($result) {
+    while ($row = pg_fetch_assoc($result)) {
+        $mensajes[] = $row;
+    }
+}
+
+// ============================================================
+// FILTRAR DUPLICADOS (sin cambios)
+// ============================================================
 $duplicados_equipo = ['img1', 'img2', 'img3', 'img4', 'miembro1_imagen', 'miembro2_imagen', 'miembro3_imagen', 'miembro4_imagen'];
 $duplicados_proyectos = ['img1', 'img2', 'img3'];
 
@@ -105,6 +118,8 @@ foreach ($contenido as $seccion => &$campos) {
 unset($campos);
 
 $secciones = array_keys($contenido);
+// Agregar 'mensajes' como sección especial (no viene de la tabla contenido)
+$secciones[] = 'mensajes';
 $primeraSeccion = $secciones[0] ?? 'hero';
 ?>
 <!DOCTYPE html>
@@ -115,6 +130,7 @@ $primeraSeccion = $secciones[0] ?? 'hero';
     <title>Panel de Administración - GEINFTEC</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
+        /* (Mismos estilos que antes, añadir algunos para mensajes) */
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: 'Inter', sans-serif; background: #0b132b; color: #f8fafc; padding: 1.5rem; }
         .container { max-width: 1400px; margin: 0 auto; }
@@ -169,10 +185,20 @@ $primeraSeccion = $secciones[0] ?? 'hero';
         .btn-refresh { background: transparent; color: #00f5d4; border: 1px solid #00f5d4; padding: 0.2rem 0.8rem; border-radius: 50px; cursor: pointer; font-size: 0.8rem; transition: all 0.3s; }
         .btn-refresh:hover { background: #00f5d4; color: #0b132b; }
         .btn-refresh:disabled { opacity: 0.5; cursor: not-allowed; }
+        /* Estilos para la tabla de mensajes */
+        .tabla-mensajes { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+        .tabla-mensajes th { text-align: left; padding: 0.8rem 0.5rem; border-bottom: 2px solid #00f5d4; color: #00f5d4; }
+        .tabla-mensajes td { padding: 0.8rem 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.05); vertical-align: top; }
+        .tabla-mensajes .leido { color: #666; }
+        .tabla-mensajes .no-leido { font-weight: 600; color: #00f5d4; }
+        .badge-mensaje { background: #1c2541; padding: 0.2rem 0.6rem; border-radius: 20px; font-size: 0.7rem; color: #b0b8d1; }
+        .sin-mensajes { text-align: center; padding: 2rem; color: #b0b8d1; }
         @media (max-width: 768px) {
             .campo label { min-width: 100%; }
             .header-admin { flex-direction: column; align-items: stretch; }
             .tabs { justify-content: center; }
+            .tabla-mensajes { font-size: 0.8rem; }
+            .tabla-mensajes th, .tabla-mensajes td { padding: 0.4rem 0.3rem; }
         }
     </style>
 </head>
@@ -182,7 +208,7 @@ $primeraSeccion = $secciones[0] ?? 'hero';
     <div class="header-admin">
         <div>
             <h1>⚙️ Panel de Administración</h1>
-            <span class="badge"><?php echo count($contenido); ?> secciones</span>
+            <span class="badge"><?php echo count($contenido) + 1; ?> secciones</span>
         </div>
         <div class="admin-actions">
             <a href="index.php" target="_blank" class="btn">🌐 Ver sitio</a>
@@ -197,7 +223,13 @@ $primeraSeccion = $secciones[0] ?? 'hero';
     <div class="tabs" id="tabsContainer">
         <?php foreach ($secciones as $index => $seccion): ?>
             <div class="tab <?php echo $index === 0 ? 'active' : ''; ?>" data-tab="<?php echo $seccion; ?>">
-                <?php echo ucfirst($seccion); ?>
+                <?php 
+                    $nombre = ucfirst($seccion);
+                    if ($seccion === 'mensajes') {
+                        $nombre = '📩 ' . $nombre . ' (' . count($mensajes) . ')';
+                    }
+                    echo $nombre; 
+                ?>
             </div>
         <?php endforeach; ?>
     </div>
@@ -205,83 +237,130 @@ $primeraSeccion = $secciones[0] ?? 'hero';
     <!-- Contenido de Tabs -->
     <?php foreach ($secciones as $index => $seccion): ?>
         <div class="tab-content <?php echo $index === 0 ? 'active' : ''; ?>" id="tab-<?php echo $seccion; ?>">
-            <div class="seccion-card">
-                <h2>
-                    <?php echo ucfirst($seccion); ?>
-                    <small><?php echo count($contenido[$seccion]); ?> campos</small>
-                </h2>
-                <?php foreach ($contenido[$seccion] as $clave => $valor): ?>
-                    <div class="campo" data-seccion="<?php echo $seccion; ?>" data-clave="<?php echo $clave; ?>">
-                        <label for="<?php echo $seccion.'_'.$clave; ?>">
-                            <?php 
-                            $label = $clave;
-                            if (strpos($clave, 'img') !== false || strpos($clave, 'imagen') !== false || strpos($clave, 'foto') !== false) {
-                                $label = '🖼️ ' . $clave;
-                            }
-                            echo htmlspecialchars($label); 
-                            ?>
-                        </label>
-                        <div class="valor">
-                            <?php if (strpos($clave, 'imagen') !== false || strpos($clave, 'img') !== false || strpos($clave, 'foto') !== false): ?>
-                                <div class="img-container">
-                                    <?php if ($valor && filter_var($valor, FILTER_VALIDATE_URL)): ?>
-                                        <img src="<?php echo htmlspecialchars($valor); ?>" alt="preview" class="preview-img">
-                                    <?php else: ?>
-                                        <div style="color:#666; font-size:0.8rem;">Sin imagen</div>
-                                    <?php endif; ?>
-                                    <div>
-                                        <form class="ajax-form" enctype="multipart/form-data" method="post" action="">
-                                            <input type="hidden" name="action" value="upload_image">
-                                            <input type="hidden" name="seccion" value="<?php echo htmlspecialchars($seccion); ?>">
-                                            <input type="hidden" name="clave" value="<?php echo htmlspecialchars($clave); ?>">
-                                            <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrf_token); ?>">
-                                            <input type="file" name="imagen" accept="image/*" required style="margin-bottom:0.5rem; display:block;">
-                                            <button type="submit" class="btn btn-sm">Subir nueva</button>
-                                        </form>
-                                        <button type="button" class="btn btn-outline btn-sm" onclick="openImageSelector('<?php echo $seccion; ?>', '<?php echo $clave; ?>')">Elegir existente</button>
-                                    </div>
-                                </div>
-                                <form class="ajax-form" method="post" style="margin-top:0.5rem;">
-                                    <input type="hidden" name="action" value="update">
-                                    <input type="hidden" name="seccion" value="<?php echo htmlspecialchars($seccion); ?>">
-                                    <input type="hidden" name="clave" value="<?php echo htmlspecialchars($clave); ?>">
-                                    <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrf_token); ?>">
-                                    <input type="text" name="valor" value="<?php echo htmlspecialchars($valor); ?>" placeholder="URL de imagen" style="width:100%;">
-                                    <button type="submit" class="btn btn-sm" style="margin-top:0.3rem;">Actualizar URL</button>
-                                </form>
-                            <?php else: ?>
-                                <form class="ajax-form" method="post">
-                                    <input type="hidden" name="action" value="update">
-                                    <input type="hidden" name="seccion" value="<?php echo htmlspecialchars($seccion); ?>">
-                                    <input type="hidden" name="clave" value="<?php echo htmlspecialchars($clave); ?>">
-                                    <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrf_token); ?>">
-                                    <?php if (strlen($valor) > 100): ?>
-                                        <textarea name="valor"><?php echo htmlspecialchars($valor); ?></textarea>
-                                    <?php else: ?>
-                                        <input type="text" name="valor" value="<?php echo htmlspecialchars($valor); ?>">
-                                    <?php endif; ?>
-                                    <button type="submit" class="btn btn-sm" style="margin-top:0.3rem;">Actualizar</button>
-                                </form>
-                            <?php endif; ?>
-                            <div class="status"></div>
-                            <?php if ($valor && !empty($valor) && strlen($valor) < 100): ?>
-                                <div class="help-text">Valor: <?php echo htmlspecialchars(substr($valor, 0, 80)); ?></div>
-                            <?php endif; ?>
+            <?php if ($seccion === 'mensajes'): ?>
+                <!-- Sección MENSAJES -->
+                <div class="seccion-card">
+                    <h2>
+                        📩 Mensajes de Contacto
+                        <small><?php echo count($mensajes); ?> mensajes</small>
+                    </h2>
+                    <?php if (count($mensajes) > 0): ?>
+                        <div style="overflow-x:auto;">
+                            <table class="tabla-mensajes">
+                                <thead>
+                                    <tr>
+                                        <th>Fecha</th>
+                                        <th>Nombre</th>
+                                        <th>Email</th>
+                                        <th>Teléfono</th>
+                                        <th>Mensaje</th>
+                                        <th>Estado</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php foreach ($mensajes as $msg): ?>
+                                        <tr>
+                                            <td style="white-space:nowrap;"><?php echo date('d/m/Y H:i', strtotime($msg['fecha'])); ?></td>
+                                            <td><strong><?php echo htmlspecialchars($msg['nombre']); ?></strong></td>
+                                            <td><a href="mailto:<?php echo htmlspecialchars($msg['email']); ?>" style="color:#00f5d4;"><?php echo htmlspecialchars($msg['email']); ?></a></td>
+                                            <td><?php echo htmlspecialchars($msg['telefono'] ?: '-'); ?></td>
+                                            <td style="max-width:200px; word-break:break-word;"><?php echo nl2br(htmlspecialchars($msg['mensaje'])); ?></td>
+                                            <td>
+                                                <?php if ($msg['leido']): ?>
+                                                    <span class="badge-mensaje">✅ Leído</span>
+                                                <?php else: ?>
+                                                    <span class="badge-mensaje" style="background:#00f5d4; color:#0b132b;">🆕 Nuevo</span>
+                                                <?php endif; ?>
+                                            </td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                </tbody>
+                            </table>
                         </div>
-                    </div>
-                <?php endforeach; ?>
-                <div style="margin-top:1rem; padding:0.8rem; background:rgba(0,245,212,0.05); border-radius:8px; border-left:3px solid #00f5d4;">
-                    <p style="color:#b0b8d1; font-size:0.85rem;">
-                        💡 <strong>Consejo:</strong> Para imágenes, usa el botón "Elegir existente" para reutilizar imágenes ya subidas.
-                        También puedes pegar la URL de cualquier imagen de internet.
-                    </p>
+                    <?php else: ?>
+                        <p class="sin-mensajes">📭 No hay mensajes de contacto aún.</p>
+                    <?php endif; ?>
                 </div>
-            </div>
+            <?php else: ?>
+                <!-- Secciones normales (Hero, Servicios, etc.) -->
+                <div class="seccion-card">
+                    <h2>
+                        <?php echo ucfirst($seccion); ?>
+                        <small><?php echo count($contenido[$seccion]); ?> campos</small>
+                    </h2>
+                    <?php foreach ($contenido[$seccion] as $clave => $valor): ?>
+                        <div class="campo" data-seccion="<?php echo $seccion; ?>" data-clave="<?php echo $clave; ?>">
+                            <label for="<?php echo $seccion.'_'.$clave; ?>">
+                                <?php 
+                                $label = $clave;
+                                if (strpos($clave, 'img') !== false || strpos($clave, 'imagen') !== false || strpos($clave, 'foto') !== false) {
+                                    $label = '🖼️ ' . $clave;
+                                }
+                                echo htmlspecialchars($label); 
+                                ?>
+                            </label>
+                            <div class="valor">
+                                <?php if (strpos($clave, 'imagen') !== false || strpos($clave, 'img') !== false || strpos($clave, 'foto') !== false): ?>
+                                    <div class="img-container">
+                                        <?php if ($valor && filter_var($valor, FILTER_VALIDATE_URL)): ?>
+                                            <img src="<?php echo htmlspecialchars($valor); ?>" alt="preview" class="preview-img">
+                                        <?php else: ?>
+                                            <div style="color:#666; font-size:0.8rem;">Sin imagen</div>
+                                        <?php endif; ?>
+                                        <div>
+                                            <form class="ajax-form" enctype="multipart/form-data" method="post" action="">
+                                                <input type="hidden" name="action" value="upload_image">
+                                                <input type="hidden" name="seccion" value="<?php echo htmlspecialchars($seccion); ?>">
+                                                <input type="hidden" name="clave" value="<?php echo htmlspecialchars($clave); ?>">
+                                                <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrf_token); ?>">
+                                                <input type="file" name="imagen" accept="image/*" required style="margin-bottom:0.5rem; display:block;">
+                                                <button type="submit" class="btn btn-sm">Subir nueva</button>
+                                            </form>
+                                            <button type="button" class="btn btn-outline btn-sm" onclick="openImageSelector('<?php echo $seccion; ?>', '<?php echo $clave; ?>')">Elegir existente</button>
+                                        </div>
+                                    </div>
+                                    <form class="ajax-form" method="post" style="margin-top:0.5rem;">
+                                        <input type="hidden" name="action" value="update">
+                                        <input type="hidden" name="seccion" value="<?php echo htmlspecialchars($seccion); ?>">
+                                        <input type="hidden" name="clave" value="<?php echo htmlspecialchars($clave); ?>">
+                                        <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrf_token); ?>">
+                                        <input type="text" name="valor" value="<?php echo htmlspecialchars($valor); ?>" placeholder="URL de imagen" style="width:100%;">
+                                        <button type="submit" class="btn btn-sm" style="margin-top:0.3rem;">Actualizar URL</button>
+                                    </form>
+                                <?php else: ?>
+                                    <form class="ajax-form" method="post">
+                                        <input type="hidden" name="action" value="update">
+                                        <input type="hidden" name="seccion" value="<?php echo htmlspecialchars($seccion); ?>">
+                                        <input type="hidden" name="clave" value="<?php echo htmlspecialchars($clave); ?>">
+                                        <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrf_token); ?>">
+                                        <?php if (strlen($valor) > 100): ?>
+                                            <textarea name="valor"><?php echo htmlspecialchars($valor); ?></textarea>
+                                        <?php else: ?>
+                                            <input type="text" name="valor" value="<?php echo htmlspecialchars($valor); ?>">
+                                        <?php endif; ?>
+                                        <button type="submit" class="btn btn-sm" style="margin-top:0.3rem;">Actualizar</button>
+                                    </form>
+                                <?php endif; ?>
+                                <div class="status"></div>
+                                <?php if ($valor && !empty($valor) && strlen($valor) < 100): ?>
+                                    <div class="help-text">Valor: <?php echo htmlspecialchars(substr($valor, 0, 80)); ?></div>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                    <div style="margin-top:1rem; padding:0.8rem; background:rgba(0,245,212,0.05); border-radius:8px; border-left:3px solid #00f5d4;">
+                        <p style="color:#b0b8d1; font-size:0.85rem;">
+                            💡 <strong>Consejo:</strong> Para imágenes, usa el botón "Elegir existente" para reutilizar imágenes ya subidas.
+                            También puedes pegar la URL de cualquier imagen de internet.
+                        </p>
+                    </div>
+                </div>
+            <?php endif; ?>
         </div>
     <?php endforeach; ?>
 </div>
 
-<!-- Modal para selector de imágenes -->
+<!-- Modal para selector de imágenes (igual que antes) -->
 <div class="modal" id="imageModal">
     <div class="modal-content">
         <button class="modal-close" onclick="closeImageSelector()">&times;</button>
@@ -388,7 +467,7 @@ $primeraSeccion = $secciones[0] ?? 'hero';
     });
 
     // ============================================================
-    // 3. MENSAJE GLOBAL (solo para acciones principales)
+    // 3. MENSAJE GLOBAL
     // ============================================================
     function mostrarMensaje(texto, tipo) {
         const msg = document.getElementById('mensajeGlobal');
@@ -410,17 +489,13 @@ $primeraSeccion = $secciones[0] ?? 'hero';
         currentSeccion = seccion;
         currentClave = clave;
         document.getElementById('imageModal').classList.add('active');
-        // Limpiar feedback anterior
         document.getElementById('modalFeedback').textContent = '';
-        // Cargar imágenes al abrir el modal
         loadImages();
     }
 
     function closeImageSelector() {
         document.getElementById('imageModal').classList.remove('active');
-        // Limpiar feedback al cerrar
         document.getElementById('modalFeedback').textContent = '';
-        // Habilitar botón de refrescar si estaba deshabilitado
         document.getElementById('btnRefreshImages').disabled = false;
     }
 
@@ -510,12 +585,10 @@ $primeraSeccion = $secciones[0] ?? 'hero';
     }
 
     function refreshImages() {
-        // Solo refresca el contenido del modal, sin mensajes externos
         const feedback = document.getElementById('modalFeedback');
         feedback.textContent = '🔄 Actualizando...';
         feedback.style.color = '#b0b8d1';
         loadImages();
-        // El mensaje de "Actualizado" se mostrará dentro del modal al finalizar loadImages()
     }
 
     document.getElementById('imageModal').addEventListener('click', function(e) {
