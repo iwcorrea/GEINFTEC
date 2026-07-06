@@ -292,7 +292,7 @@ $footer_copyright = getContent('footer', 'copyright', '&copy; 2026 GEINFTEC S.A.
                 </div>
                 <div class="contact-info fade-up">
                     <div class="item"><span class="icon">📍</span> <?php echo $contacto_direccion; ?></div>
-                    <div class="item"><span class="icon">📞</span> <?php echo $contacto_telefono; ?></div>
+                    <div class="item"><span class="icon">📲</span> <?php echo $contacto_telefono; ?></div>
                     <div class="item"><span class="icon">✉️</span> <?php echo $contacto_email; ?></div>
                     <div class="item"><span class="icon">🕒</span> <?php echo $contacto_horario; ?></div>
                     <div class="map-container">
