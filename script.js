@@ -189,7 +189,7 @@
     }
 
     // ============================================================
-    // 7. FORMULARIO DE CONTACTO (ENVÍO REAL A enviar_mensaje.php)
+    // 7. FORMULARIO DE CONTACTO (ENVÍO REAL)
     // ============================================================
     const contactForm = document.getElementById('contactForm');
     if (contactForm) {
@@ -203,7 +203,6 @@
             const mensaje = document.getElementById('mensaje');
             let valid = true;
 
-            // Validación básica
             [nombre, email, mensaje].forEach(function(field) {
                 field.classList.remove('error');
                 if (!field.value.trim()) {
@@ -223,46 +222,36 @@
                 return;
             }
 
-            // Mostrar mensaje de "enviando..."
             formFeedback.textContent = '⏳ Enviando mensaje...';
             formFeedback.style.color = '#b0b8d1';
 
-            // Preparar datos
             const formData = new FormData(this);
 
-            // Enviar con fetch a enviar_mensaje.php
             fetch('enviar_mensaje.php', {
                 method: 'POST',
                 body: formData
             })
             .then(response => {
-                // Verificar que la respuesta sea JSON
-                const contentType = response.headers.get('content-type');
-                if (!contentType || !contentType.includes('application/json')) {
-                    throw new Error('El servidor no devolvió una respuesta JSON válida.');
+                if (!response.ok) {
+                    throw new Error('Error en el servidor (código ' + response.status + ')');
                 }
                 return response.json();
             })
             .then(data => {
-                // Depuración: mostrar la respuesta completa en consola
                 console.log('Respuesta del servidor:', data);
-
                 if (data.success) {
-                    formFeedback.textContent = data.message || '✅ Mensaje enviado con éxito.';
+                    formFeedback.textContent = data.message;
                     formFeedback.style.color = '#00f5d4';
                     contactForm.reset();
                     if (data.warning) {
                         formFeedback.textContent += ' ' + data.warning;
                     }
                 } else {
-                    // Mostrar el mensaje de error del servidor, o un mensaje genérico si no existe
-                    const errorMsg = data.message || data.error || data.debug || 'Error desconocido. Intenta nuevamente.';
-                    formFeedback.textContent = '❌ ' + errorMsg;
+                    formFeedback.textContent = '❌ ' + (data.message || 'Error desconocido');
                     formFeedback.style.color = '#ff6b6b';
                 }
             })
             .catch(error => {
-                // Error de red o de parsing
                 formFeedback.textContent = '❌ Error de conexión. Intenta nuevamente.';
                 formFeedback.style.color = '#ff6b6b';
                 console.error('Error en fetch:', error);
