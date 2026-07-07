@@ -188,82 +188,87 @@
         fadeElements.forEach(function(el) { observer.observe(el); });
     }
 
-// ============================================================
-// 7. FORMULARIO DE CONTACTO (ENVÍO REAL A enviar_mensaje.php)
-// ============================================================
-const contactForm = document.getElementById('contactForm');
-if (contactForm) {
-    const formFeedback = document.getElementById('formFeedback');
-    contactForm.addEventListener('submit', function(e) {
-        e.preventDefault();
+    // ============================================================
+    // 7. FORMULARIO DE CONTACTO (ENVÍO REAL A enviar_mensaje.php)
+    // ============================================================
+    const contactForm = document.getElementById('contactForm');
+    if (contactForm) {
+        const formFeedback = document.getElementById('formFeedback');
+        contactForm.addEventListener('submit', function(e) {
+            e.preventDefault();
 
-        const nombre = document.getElementById('nombre');
-        const email = document.getElementById('email');
-        const telefono = document.getElementById('telefono');
-        const mensaje = document.getElementById('mensaje');
-        let valid = true;
+            const nombre = document.getElementById('nombre');
+            const email = document.getElementById('email');
+            const telefono = document.getElementById('telefono');
+            const mensaje = document.getElementById('mensaje');
+            let valid = true;
 
-        // Validación básica
-        [nombre, email, mensaje].forEach(function(field) {
-            field.classList.remove('error');
-            if (!field.value.trim()) {
-                field.classList.add('error');
+            // Validación básica
+            [nombre, email, mensaje].forEach(function(field) {
+                field.classList.remove('error');
+                if (!field.value.trim()) {
+                    field.classList.add('error');
+                    valid = false;
+                }
+            });
+
+            if (email.value.trim() && !email.value.includes('@')) {
+                email.classList.add('error');
                 valid = false;
             }
-        });
 
-        if (email.value.trim() && !email.value.includes('@')) {
-            email.classList.add('error');
-            valid = false;
-        }
-
-        if (!valid) {
-            formFeedback.textContent = '⚠️ Por favor completa todos los campos correctamente.';
-            formFeedback.style.color = '#ff6b6b';
-            return;
-        }
-
-        // Mostrar mensaje de "enviando..."
-        formFeedback.textContent = '⏳ Enviando mensaje...';
-        formFeedback.style.color = '#b0b8d1';
-
-        // Preparar datos
-        const formData = new FormData(this);
-
-        // Enviar con fetch a enviar_mensaje.php
-        fetch('enviar_mensaje.php', {
-            method: 'POST',
-            body: formData
-        })
-        .then(response => {
-            // Verificar que la respuesta sea JSON
-            const contentType = response.headers.get('content-type');
-            if (!contentType || !contentType.includes('application/json')) {
-                throw new Error('El servidor no devolvió una respuesta JSON válida.');
-            }
-            return response.json();
-        })
-        .then(data => {
-            if (data.success) {
-                formFeedback.textContent = data.message;
-                formFeedback.style.color = '#00f5d4';
-                contactForm.reset();
-                if (data.warning) {
-                    formFeedback.textContent += ' ' + data.warning;
-                }
-            } else {
-                // Si el servidor devuelve success: false
-                formFeedback.textContent = '❌ ' + (data.message || 'Error desconocido');
+            if (!valid) {
+                formFeedback.textContent = '⚠️ Por favor completa todos los campos correctamente.';
                 formFeedback.style.color = '#ff6b6b';
+                return;
             }
-        })
-        .catch(error => {
-            formFeedback.textContent = '❌ Error de conexión. Intenta nuevamente.';
-            formFeedback.style.color = '#ff6b6b';
-            console.error('Error:', error);
+
+            // Mostrar mensaje de "enviando..."
+            formFeedback.textContent = '⏳ Enviando mensaje...';
+            formFeedback.style.color = '#b0b8d1';
+
+            // Preparar datos
+            const formData = new FormData(this);
+
+            // Enviar con fetch a enviar_mensaje.php
+            fetch('enviar_mensaje.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                // Verificar que la respuesta sea JSON
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    throw new Error('El servidor no devolvió una respuesta JSON válida.');
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Depuración: mostrar la respuesta completa en consola
+                console.log('Respuesta del servidor:', data);
+
+                if (data.success) {
+                    formFeedback.textContent = data.message || '✅ Mensaje enviado con éxito.';
+                    formFeedback.style.color = '#00f5d4';
+                    contactForm.reset();
+                    if (data.warning) {
+                        formFeedback.textContent += ' ' + data.warning;
+                    }
+                } else {
+                    // Mostrar el mensaje de error del servidor, o un mensaje genérico si no existe
+                    const errorMsg = data.message || data.error || data.debug || 'Error desconocido. Intenta nuevamente.';
+                    formFeedback.textContent = '❌ ' + errorMsg;
+                    formFeedback.style.color = '#ff6b6b';
+                }
+            })
+            .catch(error => {
+                // Error de red o de parsing
+                formFeedback.textContent = '❌ Error de conexión. Intenta nuevamente.';
+                formFeedback.style.color = '#ff6b6b';
+                console.error('Error en fetch:', error);
+            });
         });
-    });
-}
+    }
 
     // 8. NEWSLETTER
     const newsletterForm = document.getElementById('newsletterForm');
