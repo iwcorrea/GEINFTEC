@@ -5,7 +5,12 @@
 // ============================================================
 header('Content-Type: application/json');
 
-// --- Incluir PHPMailer (ajusta la ruta según tu estructura) ---
+// --- Activar reporte de errores (para depuración) ---
+ini_set('display_errors', 0); // No mostrar errores en pantalla
+ini_set('log_errors', 1);
+error_reporting(E_ALL);
+
+// --- Incluir PHPMailer ---
 require_once 'phpmailer/src/PHPMailer.php';
 require_once 'phpmailer/src/SMTP.php';
 require_once 'phpmailer/src/Exception.php';
@@ -17,6 +22,13 @@ use PHPMailer\PHPMailer\Exception;
 // --- Conexión a la base de datos ---
 require_once 'config.php';
 
+// --- Función para responder en JSON ---
+function respond($success, $message, $extra = []) {
+    $response = ['success' => $success, 'message' => $message] + $extra;
+    echo json_encode($response);
+    exit;
+}
+
 // --- Recibir datos del formulario ---
 $nombre = trim($_POST['nombre'] ?? '');
 $email = trim($_POST['email'] ?? '');
@@ -25,19 +37,11 @@ $mensaje = trim($_POST['mensaje'] ?? '');
 
 // --- Validar campos obligatorios ---
 if (empty($nombre) || empty($email) || empty($mensaje)) {
-    echo json_encode([
-        'success' => false,
-        'error' => 'Todos los campos obligatorios deben estar llenos.'
-    ]);
-    exit;
+    respond(false, 'Todos los campos obligatorios deben estar llenos.');
 }
 
 if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-    echo json_encode([
-        'success' => false,
-        'error' => 'El correo electrónico no es válido.'
-    ]);
-    exit;
+    respond(false, 'El correo electrónico no es válido.');
 }
 
 // --- Guardar en Supabase (tabla mensajes) ---
@@ -46,27 +50,29 @@ $result = pg_query_params($conn, $query, [$nombre, $email, $telefono, $mensaje])
 
 if (!$result) {
     error_log("Error al guardar mensaje: " . pg_last_error($conn));
-    echo json_encode([
-        'success' => false,
-        'error' => 'Error al guardar el mensaje. Intenta nuevamente.'
-    ]);
-    exit;
+    respond(false, 'Error al guardar el mensaje. Intenta nuevamente.');
 }
 
-// --- Enviar correo de notificación al administrador ---
+// --- Enviar correo de notificación ---
 $emailEnviado = false;
+$emailError = '';
 
 try {
     $mail = new PHPMailer(true);
 
-    // Configuración SMTP desde variables de entorno (definidas en Render)
+    // Configuración SMTP desde variables de entorno
     $mail->isSMTP();
     $mail->Host       = getenv('SMTP_HOST') ?: 'smtp.office365.com';
     $mail->SMTPAuth   = true;
     $mail->Username   = getenv('SMTP_USER') ?: 'geinftec@outlook.com';
-    $mail->Password   = getenv('SMTP_PASS') ?: 'tu_contraseña';
+    $mail->Password   = getenv('SMTP_PASS') ?: ''; // No uses fallback vacío
     $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
     $mail->Port       = getenv('SMTP_PORT') ?: 587;
+
+    // Verificar que la contraseña esté configurada
+    if (empty($mail->Password)) {
+        throw new Exception('La contraseña de SMTP no está configurada en las variables de entorno.');
+    }
 
     // Destinatarios
     $mail->setFrom($email, $nombre);
@@ -93,21 +99,22 @@ try {
     $emailEnviado = true;
 
 } catch (Exception $e) {
-    error_log("Error al enviar correo: " . $mail->ErrorInfo);
-    // No detenemos la ejecución, ya que el mensaje se guardó en BD
+    $emailError = $mail->ErrorInfo;
+    error_log("Error al enviar correo: " . $emailError);
 }
 
 // --- Respuesta al cliente ---
-$respuesta = [
+$response = [
     'success' => true,
     'message' => '✅ Mensaje enviado con éxito. Te contactaremos pronto.',
     'email_enviado' => $emailEnviado
 ];
 
 if (!$emailEnviado) {
-    $respuesta['warning'] = 'Tu mensaje fue guardado, pero hubo un problema al enviar la notificación.';
+    $response['warning'] = 'Tu mensaje fue guardado, pero hubo un problema al enviar la notificación.';
+    $response['debug'] = $emailError; // Solo para depuración (quita después)
 }
 
-echo json_encode($respuesta);
+echo json_encode($response);
 exit;
 ?>
