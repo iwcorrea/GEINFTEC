@@ -282,10 +282,10 @@ $footer_copyright = getContent('footer', 'copyright', '&copy; 2026 GEINFTEC S.A.
             <div class="contact-grid">
                 <div class="fade-up">
                     <form class="contact-form" id="contactForm" novalidate>
-                        <input type="text" placeholder="Nombre completo" required id="nombre" />
-                        <input type="email" placeholder="Correo electrónico" required id="email" />
-                        <input type="text" placeholder="Teléfono" id="telefono" />
-                        <textarea rows="4" placeholder="Mensaje" required id="mensaje"></textarea>
+                        <input type="text" placeholder="Nombre completo" required id="nombre" name="nombre" />
+                        <input type="email" placeholder="Correo electrónico" required id="email" name="email" />
+                        <input type="text" placeholder="Teléfono" id="telefono" name="telefono" />
+                        <textarea rows="4" placeholder="Mensaje" required id="mensaje" name="mensaje"></textarea>
                         <button type="submit" class="btn">Enviar mensaje</button>
                         <div id="formFeedback" style="margin-top:1rem; color:var(--cyan);"></div>
                     </form>
